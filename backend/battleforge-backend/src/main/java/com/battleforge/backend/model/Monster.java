@@ -1,6 +1,5 @@
-package com.battleforge.backend.monster.model;
+package com.battleforge.backend.model;
 
-import com.battleforge.backend.move.model.Move;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package com.battleforge.backend.battle.model;
+package com.battleforge.backend.model;
 
 import com.battleforge.backend.shared.StatType;
 import jakarta.persistence.Entity;

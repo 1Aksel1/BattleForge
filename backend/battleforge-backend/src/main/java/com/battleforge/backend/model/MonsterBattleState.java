@@ -1,6 +1,5 @@
-package com.battleforge.backend.battle.model;
+package com.battleforge.backend.model;
 
-import com.battleforge.backend.move.model.Move;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.JoinColumn;

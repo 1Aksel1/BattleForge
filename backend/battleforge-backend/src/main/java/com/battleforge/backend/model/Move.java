@@ -1,4 +1,4 @@
-package com.battleforge.backend.move.model;
+package com.battleforge.backend.model;
 
 import com.battleforge.backend.shared.MoveEffect;
 import jakarta.persistence.AttributeOverride;
