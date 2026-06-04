@@ -34,4 +34,5 @@ public class BattleState {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "monster_battle_state_id")
     private MonsterBattleState monster;
+
 }

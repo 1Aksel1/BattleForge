@@ -53,12 +53,4 @@ public class Hero {
     @Builder.Default
     private List<Move> learnedMoves = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-        name = "hero_equipped_moves",
-        joinColumns = @JoinColumn(name = "hero_id"),
-        inverseJoinColumns = @JoinColumn(name = "move_id")
-    )
-    @Builder.Default
-    private List<Move> equippedMoves = new ArrayList<>();
 }
