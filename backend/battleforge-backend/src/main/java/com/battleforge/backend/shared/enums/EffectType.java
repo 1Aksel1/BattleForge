@@ -1,4 +1,4 @@
-package com.battleforge.backend.shared;
+package com.battleforge.backend.shared.enums;
 
 public enum EffectType {
     DAMAGE, HEAL, BUFF, DEBUFF
