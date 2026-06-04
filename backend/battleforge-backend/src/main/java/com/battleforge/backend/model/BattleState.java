@@ -1,4 +1,4 @@
-package com.battleforge.backend.battle.model;
+package com.battleforge.backend.model;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;

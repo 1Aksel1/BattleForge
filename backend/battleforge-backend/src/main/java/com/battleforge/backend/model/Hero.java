@@ -1,6 +1,5 @@
-package com.battleforge.backend.hero.model;
+package com.battleforge.backend.model;
 
-import com.battleforge.backend.move.model.Move;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
