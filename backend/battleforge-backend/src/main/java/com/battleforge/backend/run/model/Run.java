@@ -1,7 +1,7 @@
-package com.battleforge.backend.run;
+package com.battleforge.backend.run.model;
 
-import com.battleforge.backend.hero.Hero;
-import com.battleforge.backend.monster.Monster;
+import com.battleforge.backend.hero.model.Hero;
+import com.battleforge.backend.monster.model.Monster;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

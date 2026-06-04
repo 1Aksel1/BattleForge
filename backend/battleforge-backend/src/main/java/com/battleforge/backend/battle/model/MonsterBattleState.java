@@ -1,6 +1,6 @@
-package com.battleforge.backend.battle;
+package com.battleforge.backend.battle.model;
 
-import com.battleforge.backend.move.Move;
+import com.battleforge.backend.move.model.Move;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.JoinColumn;
@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HeroBattleState {
+public class MonsterBattleState {
 
     private Double currentHp;
 
@@ -34,7 +34,7 @@ public class HeroBattleState {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
-        name = "hero_battle_active_effects",
+        name = "monster_battle_active_effects",
         joinColumns = @JoinColumn(name = "battle_state_id"),
         inverseJoinColumns = @JoinColumn(name = "active_effect_id")
     )
@@ -43,10 +43,10 @@ public class HeroBattleState {
 
     @ManyToMany
     @JoinTable(
-        name = "hero_battle_equipped_moves",
+        name = "monster_battle_moves",
         joinColumns = @JoinColumn(name = "battle_state_id"),
         inverseJoinColumns = @JoinColumn(name = "move_id")
     )
     @Builder.Default
-    private List<Move> equippedMoves = new ArrayList<>();
+    private List<Move> moves = new ArrayList<>();
 }
