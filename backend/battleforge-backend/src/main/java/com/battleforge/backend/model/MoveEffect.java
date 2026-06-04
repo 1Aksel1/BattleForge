@@ -1,5 +1,8 @@
-package com.battleforge.backend.shared;
+package com.battleforge.backend.model;
 
+import com.battleforge.backend.shared.enums.EffectTarget;
+import com.battleforge.backend.shared.enums.EffectType;
+import com.battleforge.backend.shared.enums.StatType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

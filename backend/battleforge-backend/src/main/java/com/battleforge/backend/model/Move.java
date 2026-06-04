@@ -1,6 +1,5 @@
 package com.battleforge.backend.model;
 
-import com.battleforge.backend.shared.MoveEffect;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;

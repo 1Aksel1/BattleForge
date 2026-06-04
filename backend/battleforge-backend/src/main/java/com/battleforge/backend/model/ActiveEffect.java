@@ -1,6 +1,6 @@
 package com.battleforge.backend.model;
 
-import com.battleforge.backend.shared.StatType;
+import com.battleforge.backend.shared.enums.StatType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
