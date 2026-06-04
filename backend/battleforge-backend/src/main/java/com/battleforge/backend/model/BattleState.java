@@ -1,13 +1,12 @@
 package com.battleforge.backend.model;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,21 +27,11 @@ public class BattleState {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "currentHp", column = @Column(name = "hero_current_hp")),
-        @AttributeOverride(name = "attack",    column = @Column(name = "hero_attack")),
-        @AttributeOverride(name = "defense",   column = @Column(name = "hero_defense")),
-        @AttributeOverride(name = "magic",     column = @Column(name = "hero_magic"))
-    })
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "hero_battle_state_id")
     private HeroBattleState hero;
 
-    @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(name = "currentHp", column = @Column(name = "monster_current_hp")),
-        @AttributeOverride(name = "attack",    column = @Column(name = "monster_attack")),
-        @AttributeOverride(name = "defense",   column = @Column(name = "monster_defense")),
-        @AttributeOverride(name = "magic",     column = @Column(name = "monster_magic"))
-    })
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "monster_battle_state_id")
     private MonsterBattleState monster;
 }
