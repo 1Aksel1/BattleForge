@@ -463,6 +463,7 @@ public class DataInitializer implements CommandLineRunner {
 
         // ── Default Knight hero
 
+
         Hero knight = Hero.builder()
                 .username("Knight")
                 .level(1)
