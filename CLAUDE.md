@@ -45,7 +45,6 @@ controller → service → repository → entity ← dto
 - **service**: All business logic lives here; annotated `@Service`, calls repository
 - **controller**: `@RestController`, thin — delegates immediately to service, maps DTOs
 
-Packages follow `com.battleforge.backend.<feature>` (e.g., `com.battleforge.backend.character`). Each feature gets its own subpackage containing all five layers.
 
 ### Frontend
 
