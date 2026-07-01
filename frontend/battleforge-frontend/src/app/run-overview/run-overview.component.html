@@ -1,1 +1,46 @@
 <h1>Run Overview</h1>
+
+@if (run) {
+  <p>Run ID: {{ run.runId }}</p>
+
+  <h2>Hero: {{ run.hero.username }}</h2>
+  <p>Level: {{ run.hero.level }} | XP: {{ run.hero.xp }}</p>
+  <p>HP: {{ run.hero.health }} | ATK: {{ run.hero.attack }} | DEF: {{ run.hero.defense }} | MAG: {{ run.hero.magic }}</p>
+
+  <h3>Equipped Moves</h3>
+  <ul>
+    @for (move of equippedMoves; track move.id) {
+      <li><strong>{{ move.name }}</strong> — {{ move.description }}</li>
+    }
+  </ul>
+
+  <h3>Learned Moves</h3>
+  <ul>
+    @for (move of run.hero.learnedMoves; track move.id) {
+      <li>
+        <strong>{{ move.name }}</strong> — {{ move.description }}
+        @if (equippedMoves.some(e => e.id === move.id)) {
+          [equipped]
+        }
+        <button (click)="toggleEquip(move)">
+          @if (equippedMoves.some(e => e.id === move.id)) { Unequip } @else { Equip }
+        </button>
+      </li>
+    }
+  </ul>
+
+  <h3>Monsters ({{ run.monsters.length }})</h3>
+  <ol>
+    @for (monster of run.monsters; track monster.id; let i = $index) {
+      <li>
+        @if (i <= run.currentMonsterIndex) {
+          <span (click)="enterBattle(monster)" style="cursor:pointer">{{ monster.name }}</span>
+        } @else {
+          {{ monster.name }} (locked)
+        }
+      </li>
+    }
+  </ol>
+} @else {
+  <p>No run data available.</p>
+}

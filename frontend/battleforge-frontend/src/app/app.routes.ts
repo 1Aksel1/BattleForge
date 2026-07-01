@@ -11,7 +11,7 @@ export const routes: Routes = [
   },
   {
     path: 'battle',
-    loadComponent: () => import('./battle/battle.component').then(m => m.BattleComponent),
+    loadComponent: ()  => import('./battle/battle.component').then(m => m.BattleComponent),
   },
   {
     path: 'post-battle',
