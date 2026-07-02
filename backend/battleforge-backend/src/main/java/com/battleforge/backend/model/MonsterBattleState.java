@@ -32,7 +32,11 @@ public class MonsterBattleState {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     private Double currentHp;
+
+    private Double maxHp;
 
     private Double attack;
 

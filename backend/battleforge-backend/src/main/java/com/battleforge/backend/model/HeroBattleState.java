@@ -34,6 +34,8 @@ public class HeroBattleState {
 
     private Double currentHp;
 
+    private Double maxHp;
+
     private Double attack;
 
     private Double defense;
