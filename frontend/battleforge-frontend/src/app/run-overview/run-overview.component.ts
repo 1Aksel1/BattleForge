@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RunService } from '../services/run.service';
+import { BattleService } from '../services/battle.service';
 import { Monster, Move, RunConfigurationResponse } from '../models/run.model';
 
 @Component({
@@ -10,6 +11,7 @@ import { Monster, Move, RunConfigurationResponse } from '../models/run.model';
 export class RunOverviewComponent implements OnInit {
 
   private runService = inject(RunService);
+  private battleService = inject(BattleService);
   private router = inject(Router);
   run: RunConfigurationResponse | null = null;
   equippedMoves: Move[] = [];
@@ -25,12 +27,21 @@ export class RunOverviewComponent implements OnInit {
   }
 
   enterBattle(monster: Monster): void {
-
-    if(this.equippedMoves.length < 4) {
-      alert('You must equip all four moves before going to battle!')
-    }else if (confirm(`Enter battle with ${monster.name} using your currently equipped moves?`)) {
-      this.router.navigate(['/battle']);
+    if (this.equippedMoves.length < 4) {
+      alert('You must equip all four moves before going to battle!');
+      return;
     }
+    if (!confirm(`Enter battle with ${monster.name} using your currently equipped moves?`)) {
+      return;
+    }
+    this.battleService.startBattle({
+      runId: this.run!.runId,
+      monsterId: monster.id,
+      equippedMoveIds: this.equippedMoves.map(m => m.id),
+    }).subscribe({
+      next: () => this.router.navigate(['/battle']),
+      error: (err) => alert(err.message),
+    });
   }
 
 }

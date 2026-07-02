@@ -1,1 +1,18 @@
 <h1>Battle</h1>
+
+@if (battle) {
+  <h2>Hero</h2>
+  <p>HP: {{ battle.hero.currentHp }}/{{ battle.hero.maxHp }} | ATK: {{ battle.hero.attack }} | DEF: {{ battle.hero.defense }} | MAG: {{ battle.hero.magic }}</p>
+
+  <h3>Equipped Moves</h3>
+  <ul>
+    @for (move of battle.hero.equippedMoves; track move.id) {
+      <li><strong>{{ move.name }}</strong> — {{ move.description }}</li>
+    }
+  </ul>
+
+  <h2>vs {{ battle.monster.name }}</h2>
+  <p>HP: {{ battle.monster.currentHp }}/{{ battle.monster.maxHp }} | ATK: {{ battle.monster.attack }} | DEF: {{ battle.monster.defense }} | MAG: {{ battle.monster.magic }}</p>
+} @else {
+  <p>No battle data.</p>
+}
