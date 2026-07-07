@@ -1,6 +1,8 @@
 package com.battleforge.backend.controller;
 
 import com.battleforge.backend.dto.BattleStateDto;
+import com.battleforge.backend.dto.BattleTurnResponse;
+import com.battleforge.backend.dto.PlayTurnRequest;
 import com.battleforge.backend.dto.StartBattleRequest;
 import com.battleforge.backend.service.BattleService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,11 @@ public class BattleController {
     @PostMapping("/battle/start")
     public ResponseEntity<BattleStateDto> startBattle(@RequestBody StartBattleRequest request) {
         return ResponseEntity.ok(battleService.startBattle(request));
+    }
+
+    @PostMapping("/battle/turn")
+    public ResponseEntity<BattleTurnResponse> playTurn(@RequestBody PlayTurnRequest request) {
+        return ResponseEntity.ok(battleService.playTurn(request));
     }
 
 }

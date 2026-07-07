@@ -1,6 +1,8 @@
 package com.battleforge.backend.service;
 
 import com.battleforge.backend.dto.BattleStateDto;
+import com.battleforge.backend.dto.BattleTurnResponse;
+import com.battleforge.backend.dto.PlayTurnRequest;
 import com.battleforge.backend.dto.StartBattleRequest;
 import com.battleforge.backend.exceptions.InvalidBattleStateException;
 import com.battleforge.backend.exceptions.ResourceNotFoundException;
@@ -16,11 +18,14 @@ import com.battleforge.backend.repository.MonsterRepository;
 import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.repository.RunRepository;
 import com.battleforge.backend.shared.enums.BattleStatus;
+import com.battleforge.backend.shared.enums.BattleWinner;
+import com.battleforge.backend.shared.enums.StatType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -114,6 +119,94 @@ public class BattleService {
                 .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
                 .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
                 .build();
+
+    }
+
+    public BattleTurnResponse playTurn(PlayTurnRequest request) {
+
+        BattleState battleState = battleStateRepository.findById(request.getBattleStateId())
+                .orElseThrow(() -> new ResourceNotFoundException("BattleState not found with id: " + request.getBattleStateId()));
+
+        if (battleState.getStatus() != BattleStatus.ACTIVE) {
+            throw new InvalidBattleStateException("Battle is not active.");
+        }
+
+        HeroBattleState hero = battleState.getHero();
+        MonsterBattleState monster = battleState.getMonster();
+
+        Move heroMove = hero.getEquippedMoves().stream()
+                .filter(m -> m.getId().equals(request.getMoveId()))
+                .findFirst()
+                .orElseThrow(() -> new InvalidBattleStateException("Move is not equipped."));
+
+        double heroDamage = applyDamage(heroMove, hero.getAttack(), hero.getMagic(), monster.getDefense());
+        monster.setCurrentHp(monster.getCurrentHp() - heroDamage);
+
+        if (monster.getCurrentHp() <= 0) {
+
+            monster.setCurrentHp(0.0);
+            battleState.setStatus(BattleStatus.COMPLETED);
+            BattleState saved = battleStateRepository.save(battleState);
+
+            return BattleTurnResponse.builder()
+                    .battleStateId(saved.getId())
+                    .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
+                    .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
+                    .monsterMoveName(null)
+                    .battleOver(true)
+                    .winner(BattleWinner.HERO)
+                    .build();
+
+        }
+
+        List<Move> monsterMoves = monster.getMoves();
+        Move monsterMove = monsterMoves.get(new Random().nextInt(monsterMoves.size()));
+
+        double monsterDamage = applyDamage(monsterMove, monster.getAttack(), monster.getMagic(), hero.getDefense());
+        hero.setCurrentHp(hero.getCurrentHp() - monsterDamage);
+
+        if (hero.getCurrentHp() <= 0) {
+
+            hero.setCurrentHp(0.0);
+            battleState.setStatus(BattleStatus.COMPLETED);
+            BattleState saved = battleStateRepository.save(battleState);
+
+            return BattleTurnResponse.builder()
+                    .battleStateId(saved.getId())
+                    .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
+                    .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
+                    .monsterMoveName(monsterMove.getName())
+                    .battleOver(true)
+                    .winner(BattleWinner.MONSTER)
+                    .build();
+
+        }
+
+        BattleState saved = battleStateRepository.save(battleState);
+
+        return BattleTurnResponse.builder()
+                .battleStateId(saved.getId())
+                .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
+                .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
+                .monsterMoveName(monsterMove.getName())
+                .battleOver(false)
+                .winner(null)
+                .build();
+
+    }
+
+    private double applyDamage(Move move, Double attackerAttack, Double attackerMagic, Double defenderDefense) {
+
+        double value = move.getPrimaryEffect().getValue();
+        StatType stat = move.getPrimaryEffect().getStat();
+
+        if (stat == StatType.ATTACK) {
+            return Math.max(1.0, value * attackerAttack - defenderDefense);
+        } else if (stat == StatType.MAGIC) {
+            return Math.max(1.0, value * attackerMagic);
+        }
+
+        return 1.0;
 
     }
 
