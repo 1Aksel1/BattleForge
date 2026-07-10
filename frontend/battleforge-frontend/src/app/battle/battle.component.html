@@ -5,11 +5,15 @@
   <p>HP: {{ battle.hero.currentHp }}/{{ battle.hero.maxHp }} | ATK: {{ battle.hero.attack }} | DEF: {{ battle.hero.defense }} | MAG: {{ battle.hero.magic }}</p>
 
   <h3>Equipped Moves</h3>
-  <ul>
-    @for (move of battle.hero.equippedMoves; track move.id) {
-      <li><strong>{{ move.name }}</strong> — {{ move.description }}</li>
-    }
-  </ul>
+  @for (move of battle.hero.equippedMoves; track move.id) {
+    <button (click)="playTurn(move.id)" [disabled]="isWaiting">
+      {{ move.name }} — {{ move.description }}
+    </button>
+  }
+
+  @if (lastMonsterMove) {
+    <p>Monster played: {{ lastMonsterMove }}</p>
+  }
 
   <h2>vs {{ battle.monster.name }}</h2>
   <p>HP: {{ battle.monster.currentHp }}/{{ battle.monster.maxHp }} | ATK: {{ battle.monster.attack }} | DEF: {{ battle.monster.defense }} | MAG: {{ battle.monster.magic }}</p>

@@ -29,3 +29,17 @@ export interface BattleStateDto {
   hero: HeroBattleStateDto;
   monster: MonsterBattleStateDto;
 }
+
+export interface PlayTurnRequest {
+  battleStateId: number;
+  moveId: number;
+}
+
+export interface BattleTurnResponse {
+  battleStateId: number;
+  hero: HeroBattleStateDto;
+  monster: MonsterBattleStateDto;
+  monsterMoveName: string | null;
+  battleOver: boolean;
+  winner: 'HERO' | 'MONSTER' | null;
+}
