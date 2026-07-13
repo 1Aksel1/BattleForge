@@ -17,8 +17,16 @@ export class RunOverviewComponent implements OnInit {
   equippedMoves: Move[] = [];
 
   ngOnInit(): void {
-    this.run = this.runService.currentRun;
-    this.equippedMoves = this.runService.equippedMoves;
+
+    this.runService.getRun(this.runService.currentRunId!).subscribe({
+      next: (run) => {
+        this.run = run;
+        this.equippedMoves = run.hero.learnedMoves.slice(0, 4);
+        this.runService.equippedMoves = this.equippedMoves;
+      },
+      error: (err) => alert(err.error.message),
+    });
+    
   }
 
   toggleEquip(move: Move): void {
