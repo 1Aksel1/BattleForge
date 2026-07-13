@@ -21,24 +21,37 @@ export class BattleComponent implements OnInit {
   }
 
   playTurn(moveId: number): void {
+
     this.isWaiting = true;
+
     this.battleService.playTurn({ battleStateId: this.battle!.battleStateId, moveId }).subscribe({
+
       next: (response) => {
+
         this.battle!.monster.currentHp = response.monster.currentHp;
+
         setTimeout(() => {
+
           this.battle!.hero.currentHp = response.hero.currentHp;
           this.lastMonsterMove = response.monsterMoveName;
+
           if (response.battleOver) {
+
             alert('Winner: ' + response.winner);
             this.router.navigate(['/run']);
+            
           }
+
           this.isWaiting = false;
         }, 1000);
+
       },
+
       error: (err) => {
         alert(err.error.message);
         this.isWaiting = false;
       }
+
     });
   }
 

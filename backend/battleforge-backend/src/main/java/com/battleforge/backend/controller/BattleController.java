@@ -1,5 +1,6 @@
 package com.battleforge.backend.controller;
 
+import com.battleforge.backend.dto.BattleResolveResponse;
 import com.battleforge.backend.dto.BattleStateDto;
 import com.battleforge.backend.dto.BattleTurnResponse;
 import com.battleforge.backend.dto.PlayTurnRequest;
@@ -8,6 +9,7 @@ import com.battleforge.backend.service.BattleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,11 @@ public class BattleController {
     @PostMapping("/battle/turn")
     public ResponseEntity<BattleTurnResponse> playTurn(@RequestBody PlayTurnRequest request) {
         return ResponseEntity.ok(battleService.playTurn(request));
+    }
+
+    @PostMapping("/battle/resolve/{battleStateId}")
+    public ResponseEntity<BattleResolveResponse> resolveBattle(@PathVariable Long battleStateId) {
+        return ResponseEntity.ok(battleService.resolveBattle(battleStateId));
     }
 
 }

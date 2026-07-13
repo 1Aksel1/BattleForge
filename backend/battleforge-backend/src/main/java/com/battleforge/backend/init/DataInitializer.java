@@ -472,7 +472,7 @@ public class DataInitializer implements CommandLineRunner {
                 .attack(15.0)
                 .defense(10.0)
                 .magic(10.0)
-                .learnedMoves(new java.util.ArrayList<>(List.of(slash, shieldUp, battleCry, secondWind, flameBreath, clawSwipe, bite, webThrow)))
+                .learnedMoves(new java.util.ArrayList<>(List.of(slash, shieldUp, battleCry, secondWind)))
                 .build();
 
         heroRepository.save(knight);

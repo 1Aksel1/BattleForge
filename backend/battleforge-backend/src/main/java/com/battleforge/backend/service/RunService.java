@@ -31,7 +31,7 @@ public class RunService {
         Run run = runRepository.save(Run.builder()
                 .hero(hero)
                 .monsters(monsters)
-                .currentMonsterIndex(2)
+                .currentMonsterIndex(0)
                 .build());
 
         return RunConfigurationResponse.builder()

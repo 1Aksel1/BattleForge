@@ -1,12 +1,15 @@
 package com.battleforge.backend.service;
 
+import com.battleforge.backend.dto.BattleResolveResponse;
 import com.battleforge.backend.dto.BattleStateDto;
 import com.battleforge.backend.dto.BattleTurnResponse;
+import com.battleforge.backend.dto.MoveDto;
 import com.battleforge.backend.dto.PlayTurnRequest;
 import com.battleforge.backend.dto.StartBattleRequest;
 import com.battleforge.backend.exceptions.InvalidBattleStateException;
 import com.battleforge.backend.exceptions.ResourceNotFoundException;
 import com.battleforge.backend.mapper.BattleMapper;
+import com.battleforge.backend.mapper.RunMapper;
 import com.battleforge.backend.model.BattleState;
 import com.battleforge.backend.model.HeroBattleState;
 import com.battleforge.backend.model.Monster;
@@ -38,6 +41,7 @@ public class BattleService {
     private final MoveRepository moveRepository;
     private final BattleStateRepository battleStateRepository;
     private final BattleMapper battleMapper;
+    private final RunMapper runMapper;
 
     public BattleStateDto startBattle(StartBattleRequest request) {
 
@@ -146,6 +150,7 @@ public class BattleService {
 
             monster.setCurrentHp(0.0);
             battleState.setStatus(BattleStatus.COMPLETED);
+            battleState.setWinner(BattleWinner.HERO);
             BattleState saved = battleStateRepository.save(battleState);
 
             return BattleTurnResponse.builder()
@@ -169,6 +174,7 @@ public class BattleService {
 
             hero.setCurrentHp(0.0);
             battleState.setStatus(BattleStatus.COMPLETED);
+            battleState.setWinner(BattleWinner.MONSTER);
             BattleState saved = battleStateRepository.save(battleState);
 
             return BattleTurnResponse.builder()
@@ -191,6 +197,67 @@ public class BattleService {
                 .monsterMoveName(monsterMove.getName())
                 .battleOver(false)
                 .winner(null)
+                .build();
+
+    }
+
+    public BattleResolveResponse resolveBattle(Long battleStateId) {
+
+        BattleState battleState = battleStateRepository.findById(battleStateId)
+                .orElseThrow(() -> new ResourceNotFoundException("BattleState not found with id: " + battleStateId));
+
+        if (battleState.getStatus() == BattleStatus.RESOLVED) {
+            throw new InvalidBattleStateException("Battle has already been resolved.");
+        }
+
+        if (battleState.getStatus() != BattleStatus.COMPLETED) {
+            throw new InvalidBattleStateException("Battle is not completed yet.");
+        }
+
+        if (battleState.getWinner() != BattleWinner.HERO) {
+            throw new InvalidBattleStateException("Hero did not win this battle.");
+        }
+
+        Run run = battleState.getRun();
+
+        Monster monster = monsterRepository.findByName(battleState.getMonster().getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Monster not found with name: " + battleState.getMonster().getName()));
+
+        int xpGained = monster.getXpReward();
+        boolean leveledUp = false;
+        int newLevel = run.getHero().getLevel();
+
+        List<Move> monsterMoves = monster.getMoves();
+        Move learnedMove = monsterMoves.get(new Random().nextInt(monsterMoves.size()));
+        MoveDto learnedMoveDto = runMapper.toMoveDto(learnedMove);
+
+        List<Monster> runMonsters = run.getMonsters();
+
+        int defeatedIndex = -1;
+
+        for (int i = 0; i < runMonsters.size(); i++) {
+            if (runMonsters.get(i).getId().equals(monster.getId())) {
+                defeatedIndex = i;
+                break;
+            }
+        }
+
+        if (defeatedIndex == run.getCurrentMonsterIndex()) {
+            run.setCurrentMonsterIndex(run.getCurrentMonsterIndex() + 1);
+            runRepository.save(run);
+        }
+
+        boolean runComplete = run.getCurrentMonsterIndex() >= 5;
+
+        battleState.setStatus(BattleStatus.RESOLVED);
+        battleStateRepository.save(battleState);
+
+        return BattleResolveResponse.builder()
+                .xpGained(xpGained)
+                .leveledUp(leveledUp)
+                .newLevel(newLevel)
+                .learnedMove(learnedMoveDto)
+                .runComplete(runComplete)
                 .build();
 
     }

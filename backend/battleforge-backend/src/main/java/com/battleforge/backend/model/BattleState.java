@@ -1,6 +1,7 @@
 package com.battleforge.backend.model;
 
 import com.battleforge.backend.shared.enums.BattleStatus;
+import com.battleforge.backend.shared.enums.BattleWinner;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,6 +42,9 @@ public class BattleState {
 
     @Enumerated(EnumType.STRING)
     private BattleStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private BattleWinner winner;
 
     @ManyToOne
     @JoinColumn(name = "run_id")
