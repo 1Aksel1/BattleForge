@@ -1,13 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { BattleStateDto, BattleTurnResponse, PlayTurnRequest, StartBattleRequest } from '../models/battle.model';
+import { BattleResolveResponse, BattleStateDto, BattleTurnResponse, PlayTurnRequest, StartBattleRequest } from '../models/battle.model';
 
 @Injectable({ providedIn: 'root' })
 export class BattleService {
 
   private http = inject(HttpClient);
   currentBattle: BattleStateDto | null = null;
+  lastResolve: BattleResolveResponse | null = null;
 
   startBattle(request: StartBattleRequest): Observable<BattleStateDto> {
     return this.http.post<BattleStateDto>('http://localhost:8080/api/battle/start', request).pipe(
@@ -17,6 +18,12 @@ export class BattleService {
 
   playTurn(request: PlayTurnRequest): Observable<BattleTurnResponse> {
     return this.http.post<BattleTurnResponse>('http://localhost:8080/api/battle/turn', request);
+  }
+
+  resolveBattle(battleStateId: number): Observable<BattleResolveResponse> {
+    return this.http.post<BattleResolveResponse>(
+      `http://localhost:8080/api/battle/resolve/${battleStateId}`, {}
+    ).pipe(tap(resolve => { this.lastResolve = resolve; }));
   }
 
 }

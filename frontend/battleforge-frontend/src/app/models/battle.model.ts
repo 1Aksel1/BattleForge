@@ -43,3 +43,11 @@ export interface BattleTurnResponse {
   battleOver: boolean;
   winner: 'HERO' | 'MONSTER' | null;
 }
+
+export interface BattleResolveResponse {
+  xpGained: number;
+  leveledUp: boolean;
+  newLevel: number;
+  learnedMove: Move | null;
+  runComplete: boolean;
+}

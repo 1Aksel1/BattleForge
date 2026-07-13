@@ -37,9 +37,23 @@ export class BattleComponent implements OnInit {
 
           if (response.battleOver) {
 
-            alert('Winner: ' + response.winner);
-            this.router.navigate(['/run']);
-            
+            if (response.winner === 'HERO') {
+
+                this.battleService.resolveBattle(response.battleStateId).subscribe({
+
+                next: () => this.router.navigate(['/post-battle']),
+                error: (err) => {
+                  alert(err.error.message);
+                  this.isWaiting = false;
+                }
+
+              });
+              
+            } else {
+              alert('You lost!');
+              this.router.navigate(['/run']);
+            }
+
           }
 
           this.isWaiting = false;
