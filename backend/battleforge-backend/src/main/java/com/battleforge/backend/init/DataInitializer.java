@@ -1,10 +1,8 @@
 package com.battleforge.backend.init;
 
-import com.battleforge.backend.model.Hero;
 import com.battleforge.backend.model.Monster;
 import com.battleforge.backend.model.Move;
 import com.battleforge.backend.model.MoveEffect;
-import com.battleforge.backend.repository.HeroRepository;
 import com.battleforge.backend.repository.MonsterRepository;
 import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.shared.enums.EffectTarget;
@@ -23,7 +21,6 @@ public class DataInitializer implements CommandLineRunner {
 
     private final MoveRepository moveRepository;
     private final MonsterRepository monsterRepository;
-    private final HeroRepository heroRepository;
 
     @Override
     @Transactional
@@ -460,22 +457,6 @@ public class DataInitializer implements CommandLineRunner {
         // hero Slash vs dragon (L1): 1.5*15 - 15 = 7.5 dmg/hit → requires several level-ups + strategy
 
         monsterRepository.saveAll(List.of(goblinWarrior, giantSpider, goblinMage, witch, dragon));
-
-        // ── Default Knight hero
-
-
-        Hero knight = Hero.builder()
-                .username("Knight")
-                .level(1)
-                .xp(0)
-                .health(100.0)
-                .attack(15.0)
-                .defense(10.0)
-                .magic(10.0)
-                .learnedMoves(new java.util.ArrayList<>(List.of(slash, shieldUp, battleCry, secondWind)))
-                .build();
-
-        heroRepository.save(knight);
     }
 
 }
