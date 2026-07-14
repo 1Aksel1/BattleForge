@@ -21,8 +21,7 @@ export class RunOverviewComponent implements OnInit {
     this.runService.getRun(this.runService.currentRunId!).subscribe({
       next: (run) => {
         this.run = run;
-        this.equippedMoves = run.hero.learnedMoves.slice(0, 4);
-        this.runService.equippedMoves = this.equippedMoves;
+        this.equippedMoves = this.runService.equippedMoves;
       },
       error: (err) => alert(err.error.message),
     });
@@ -35,13 +34,16 @@ export class RunOverviewComponent implements OnInit {
   }
 
   enterBattle(monster: Monster): void {
+
     if (this.equippedMoves.length < 4) {
       alert('You must equip all four moves before going to battle!');
       return;
     }
+
     if (!confirm(`Enter battle with ${monster.name} using your currently equipped moves?`)) {
       return;
     }
+
     this.battleService.startBattle({
       runId: this.run!.runId,
       monsterId: monster.id,
@@ -50,6 +52,7 @@ export class RunOverviewComponent implements OnInit {
       next: () => this.router.navigate(['/battle']),
       error: (err) => alert(err.message),
     });
+
   }
 
 }
