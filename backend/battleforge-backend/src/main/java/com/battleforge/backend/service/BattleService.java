@@ -11,12 +11,14 @@ import com.battleforge.backend.exceptions.ResourceNotFoundException;
 import com.battleforge.backend.mapper.BattleMapper;
 import com.battleforge.backend.mapper.RunMapper;
 import com.battleforge.backend.model.BattleState;
+import com.battleforge.backend.model.Hero;
 import com.battleforge.backend.model.HeroBattleState;
 import com.battleforge.backend.model.Monster;
 import com.battleforge.backend.model.MonsterBattleState;
 import com.battleforge.backend.model.Move;
 import com.battleforge.backend.model.Run;
 import com.battleforge.backend.repository.BattleStateRepository;
+import com.battleforge.backend.repository.HeroRepository;
 import com.battleforge.backend.repository.MonsterRepository;
 import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.repository.RunRepository;
@@ -40,8 +42,11 @@ public class BattleService {
     private final MonsterRepository monsterRepository;
     private final MoveRepository moveRepository;
     private final BattleStateRepository battleStateRepository;
+    private final HeroRepository heroRepository;
     private final BattleMapper battleMapper;
     private final RunMapper runMapper;
+
+    private final Random random = new Random();
 
     public BattleStateDto startBattle(StartBattleRequest request) {
 
@@ -165,7 +170,7 @@ public class BattleService {
         }
 
         List<Move> monsterMoves = monster.getMoves();
-        Move monsterMove = monsterMoves.get(new Random().nextInt(monsterMoves.size()));
+        Move monsterMove = monsterMoves.get(this.random.nextInt(monsterMoves.size()));
 
         double monsterDamage = applyDamage(monsterMove, monster.getAttack(), monster.getMagic(), hero.getDefense());
         hero.setCurrentHp(hero.getCurrentHp() - monsterDamage);
@@ -227,9 +232,15 @@ public class BattleService {
         boolean leveledUp = false;
         int newLevel = run.getHero().getLevel();
 
-        List<Move> monsterMoves = monster.getMoves();
-        Move learnedMove = monsterMoves.get(new Random().nextInt(monsterMoves.size()));
-        MoveDto learnedMoveDto = runMapper.toMoveDto(learnedMove);
+        Hero hero = run.getHero();
+        Move learnedMove = selectMoveToLearn(monster, hero);
+
+        if (learnedMove != null) {
+            hero.getLearnedMoves().add(learnedMove);
+            heroRepository.save(hero);
+        }
+
+        MoveDto learnedMoveDto = learnedMove != null ? runMapper.toMoveDto(learnedMove) : null;
 
         List<Monster> runMonsters = run.getMonsters();
 
@@ -260,6 +271,23 @@ public class BattleService {
                 .runComplete(runComplete)
                 .build();
 
+    }
+
+    private Move selectMoveToLearn(Monster monster, Hero hero) {
+
+        Set<Long> learnedIds = hero.getLearnedMoves().stream()
+                .map(Move::getId)
+                .collect(Collectors.toSet());
+
+        List<Move> candidates = monster.getMoves().stream()
+                .filter(m -> !learnedIds.contains(m.getId()))
+                .toList();
+
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        return candidates.get(this.random.nextInt(candidates.size()));
     }
 
     private double applyDamage(Move move, Double attackerAttack, Double attackerMagic, Double defenderDefense) {
