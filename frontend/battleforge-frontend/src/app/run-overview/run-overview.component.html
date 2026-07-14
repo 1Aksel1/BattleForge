@@ -4,7 +4,7 @@
   <p>Run ID: {{ run.runId }}</p>
 
   <h2>Hero: {{ run.hero.username }}</h2>
-  <p>Level: {{ run.hero.level }} | XP: {{ run.hero.xp }}</p>
+  <p>Level: {{ run.hero.level }} | XP: {{ run.hero.xp }}/{{ xpThreshold() }}</p>
   <p>HP: {{ run.hero.health }} | ATK: {{ run.hero.attack }} | DEF: {{ run.hero.defense }} | MAG: {{ run.hero.magic }}</p>
 
   <h3>Equipped Moves</h3>
