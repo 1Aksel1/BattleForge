@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +48,12 @@ public class BattleService {
     private final RunMapper runMapper;
 
     private final Random random = new Random();
+
+    private static final Map<Integer, Integer> XP_TO_LEVEL_UP = Map.of(1, 100, 2, 200, 3, 350, 4, 500);
+    private static final double LEVEL_UP_HEALTH = 20.0;
+    private static final double LEVEL_UP_ATTACK = 3.0;
+    private static final double LEVEL_UP_DEFENSE = 2.0;
+    private static final double LEVEL_UP_MAGIC = 2.0;
 
     public BattleStateDto startBattle(StartBattleRequest request) {
 
@@ -229,16 +236,18 @@ public class BattleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Monster not found with name: " + battleState.getMonster().getName()));
 
         int xpGained = monster.getXpReward();
-        boolean leveledUp = false;
-        int newLevel = run.getHero().getLevel();
 
         Hero hero = run.getHero();
+
+        boolean leveledUp = applyXpAndLevelUp(hero, xpGained);
+        int newLevel = hero.getLevel();
+
         Move learnedMove = selectMoveToLearn(monster, hero);
 
         if (learnedMove != null) {
             hero.getLearnedMoves().add(learnedMove);
-            heroRepository.save(hero);
         }
+        heroRepository.save(hero);
 
         MoveDto learnedMoveDto = learnedMove != null ? runMapper.toMoveDto(learnedMove) : null;
 
@@ -270,6 +279,32 @@ public class BattleService {
                 .learnedMove(learnedMoveDto)
                 .runComplete(runComplete)
                 .build();
+
+    }
+
+    private boolean applyXpAndLevelUp(Hero hero, int xpGained) {
+
+        hero.setXp(hero.getXp() + xpGained);
+
+        if (hero.getLevel() >= 5) {
+            return false;
+        }
+
+        Integer threshold = XP_TO_LEVEL_UP.get(hero.getLevel());
+
+        if (hero.getXp() >= threshold) {
+
+            hero.setLevel(hero.getLevel() + 1);
+            hero.setXp(hero.getXp() - threshold);
+            hero.setHealth(hero.getHealth() + LEVEL_UP_HEALTH);
+            hero.setAttack(hero.getAttack() + LEVEL_UP_ATTACK);
+            hero.setDefense(hero.getDefense() + LEVEL_UP_DEFENSE);
+            hero.setMagic(hero.getMagic() + LEVEL_UP_MAGIC);
+            return true;
+
+        }
+
+        return false;
 
     }
 
