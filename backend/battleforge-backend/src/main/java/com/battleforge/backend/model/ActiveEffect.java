@@ -32,5 +32,8 @@ public class ActiveEffect {
 
     private Double value;
 
+    private boolean justSelfApplied = false;
+
     private Integer turnsRemaining;
+
 }

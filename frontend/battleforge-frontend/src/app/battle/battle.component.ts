@@ -1,11 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BattleService } from '../services/battle.service';
-import { BattleStateDto } from '../models/battle.model';
+import { BattleStateDto, HeroBattleStateDto, MonsterBattleStateDto } from '../models/battle.model';
+import { DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-battle',
   templateUrl: './battle.component.html',
+  imports: [DecimalPipe]
 })
 export class BattleComponent implements OnInit {
 
@@ -16,8 +18,42 @@ export class BattleComponent implements OnInit {
   isWaiting: boolean = false;
   lastMonsterMove: string | null = null;
 
+  heroCurrentHp: number = 0;
+  heroMaxHp: number = 0;
+  heroAttack: number = 0;
+  heroDefense: number = 0;
+  heroMagic: number = 0;
+
+  monsterCurrentHp: number = 0;
+  monsterMaxHp: number = 0;
+  monsterAttack: number = 0;
+  monsterDefense: number = 0;
+  monsterMagic: number = 0;
+
   ngOnInit(): void {
+
     this.battle = this.battleService.currentBattle;
+
+    if (this.battle) {
+      this.applySnapshot(this.battle.hero, this.battle.monster);
+    }
+
+  }
+
+  private applySnapshot(hero: HeroBattleStateDto, monster: MonsterBattleStateDto): void {
+
+    this.heroCurrentHp = hero.currentHp;
+    this.heroMaxHp = hero.maxHp;
+    this.heroAttack = hero.attack;
+    this.heroDefense = hero.defense;
+    this.heroMagic = hero.magic;
+
+    this.monsterCurrentHp = monster.currentHp;
+    this.monsterMaxHp = monster.maxHp;
+    this.monsterAttack = monster.attack;
+    this.monsterDefense = monster.defense;
+    this.monsterMagic = monster.magic;
+
   }
 
   playTurn(moveId: number): void {
@@ -28,43 +64,48 @@ export class BattleComponent implements OnInit {
 
       next: (response) => {
 
-        this.battle!.monster.currentHp = response.monster.currentHp;
+        this.applySnapshot(response.heroAfterHeroMove, response.monsterAfterHeroMove);
+
+        if(response.battleOver && response.winner === 'HERO') {
+
+          setTimeout(() => {
+
+            this.battleService.resolveBattle(response.battleStateId).subscribe({
+              next: () => this.router.navigate(['/post-battle']),
+              error: (err) => {
+                alert(err.error.message);
+                this.isWaiting = false;
+              }
+                });
+
+          }, 1250);
+
+          return;
+
+        }
 
         setTimeout(() => {
 
-          this.battle!.hero.currentHp = response.hero.currentHp;
           this.lastMonsterMove = response.monsterMoveName;
+          this.applySnapshot(response.heroAfterMonsterMove!, response.monsterAfterMonsterMove!);
 
-          if (response.battleOver) {
+          if (response.battleOver && response.winner === 'MONSTER') {
 
-            if (response.winner === 'HERO') {
-
-                this.battleService.resolveBattle(response.battleStateId).subscribe({
-
-                next: () => this.router.navigate(['/post-battle']),
-                error: (err) => {
-                  alert(err.error.message);
-                  this.isWaiting = false;
-                }
-
-              });
-              
-            } else {
               alert('You lost!');
               this.router.navigate(['/run']);
-            }
+              return;
 
           }
 
           this.isWaiting = false;
-        }, 1000);
+        }, 1500);
 
       },
 
-      error: (err) => {
-        alert(err.error.message);
-        this.isWaiting = false;
-      }
+    error: (err) => {
+      alert(err.error.message);
+      this.isWaiting = false;
+    }
 
     });
   }

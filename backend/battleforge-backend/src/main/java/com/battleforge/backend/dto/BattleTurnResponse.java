@@ -13,8 +13,10 @@ import lombok.NoArgsConstructor;
 public class BattleTurnResponse {
 
     private Long battleStateId;
-    private HeroBattleStateDto hero;
-    private MonsterBattleStateDto monster;
+    private HeroBattleStateDto heroAfterHeroMove;
+    private MonsterBattleStateDto monsterAfterHeroMove;
+    private HeroBattleStateDto heroAfterMonsterMove;
+    private MonsterBattleStateDto monsterAfterMonsterMove;
     private String monsterMoveName;
     private Boolean battleOver;
     private BattleWinner winner;

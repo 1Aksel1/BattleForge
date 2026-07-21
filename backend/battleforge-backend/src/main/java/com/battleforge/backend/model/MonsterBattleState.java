@@ -26,7 +26,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MonsterBattleState {
+public class MonsterBattleState implements BattleFighter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

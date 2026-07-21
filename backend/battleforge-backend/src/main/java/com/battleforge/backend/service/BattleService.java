@@ -1,21 +1,19 @@
 package com.battleforge.backend.service;
 
-import com.battleforge.backend.dto.BattleResolveResponse;
-import com.battleforge.backend.dto.BattleStateDto;
-import com.battleforge.backend.dto.BattleTurnResponse;
-import com.battleforge.backend.dto.MoveDto;
-import com.battleforge.backend.dto.PlayTurnRequest;
-import com.battleforge.backend.dto.StartBattleRequest;
+import com.battleforge.backend.dto.*;
 import com.battleforge.backend.exceptions.InvalidBattleStateException;
 import com.battleforge.backend.exceptions.ResourceNotFoundException;
 import com.battleforge.backend.mapper.BattleMapper;
 import com.battleforge.backend.mapper.RunMapper;
+import com.battleforge.backend.model.ActiveEffect;
+import com.battleforge.backend.model.BattleFighter;
 import com.battleforge.backend.model.BattleState;
 import com.battleforge.backend.model.Hero;
 import com.battleforge.backend.model.HeroBattleState;
 import com.battleforge.backend.model.Monster;
 import com.battleforge.backend.model.MonsterBattleState;
 import com.battleforge.backend.model.Move;
+import com.battleforge.backend.model.MoveEffect;
 import com.battleforge.backend.model.Run;
 import com.battleforge.backend.repository.BattleStateRepository;
 import com.battleforge.backend.repository.HeroRepository;
@@ -24,11 +22,14 @@ import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.repository.RunRepository;
 import com.battleforge.backend.shared.enums.BattleStatus;
 import com.battleforge.backend.shared.enums.BattleWinner;
+import com.battleforge.backend.shared.enums.EffectTarget;
+import com.battleforge.backend.shared.enums.EffectType;
 import com.battleforge.backend.shared.enums.StatType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -155,20 +156,26 @@ public class BattleService {
                 .findFirst()
                 .orElseThrow(() -> new InvalidBattleStateException("Move is not equipped."));
 
-        double heroDamage = applyDamage(heroMove, hero.getAttack(), hero.getMagic(), monster.getDefense());
-        monster.setCurrentHp(monster.getCurrentHp() - heroDamage);
+        applyMoveEffects(heroMove, hero, monster);
+        tickActiveEffects(hero);
+
+        HeroBattleStateDto heroAfterHeroMove = battleMapper.toHeroBattleStateDto(hero);
+        MonsterBattleStateDto monsterAfterHeroMove = battleMapper.toMonsterBattleStateDto(monster);
 
         if (monster.getCurrentHp() <= 0) {
 
             monster.setCurrentHp(0.0);
+            monsterAfterHeroMove.setCurrentHp(0.0);
             battleState.setStatus(BattleStatus.COMPLETED);
             battleState.setWinner(BattleWinner.HERO);
             BattleState saved = battleStateRepository.save(battleState);
 
             return BattleTurnResponse.builder()
                     .battleStateId(saved.getId())
-                    .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
-                    .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
+                    .heroAfterHeroMove(heroAfterHeroMove)
+                    .monsterAfterHeroMove(monsterAfterHeroMove)
+                    .heroAfterMonsterMove(null)
+                    .monsterAfterMonsterMove(null)
                     .monsterMoveName(null)
                     .battleOver(true)
                     .winner(BattleWinner.HERO)
@@ -179,20 +186,26 @@ public class BattleService {
         List<Move> monsterMoves = monster.getMoves();
         Move monsterMove = monsterMoves.get(this.random.nextInt(monsterMoves.size()));
 
-        double monsterDamage = applyDamage(monsterMove, monster.getAttack(), monster.getMagic(), hero.getDefense());
-        hero.setCurrentHp(hero.getCurrentHp() - monsterDamage);
+        applyMoveEffects(monsterMove, monster, hero);
+        tickActiveEffects(monster);
+
+        HeroBattleStateDto heroAfterMonsterMove = battleMapper.toHeroBattleStateDto(hero);
+        MonsterBattleStateDto monsterAfterMonsterMove = battleMapper.toMonsterBattleStateDto(monster);
 
         if (hero.getCurrentHp() <= 0) {
 
             hero.setCurrentHp(0.0);
+            heroAfterMonsterMove.setCurrentHp(0.0);
             battleState.setStatus(BattleStatus.COMPLETED);
             battleState.setWinner(BattleWinner.MONSTER);
             BattleState saved = battleStateRepository.save(battleState);
 
             return BattleTurnResponse.builder()
                     .battleStateId(saved.getId())
-                    .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
-                    .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
+                    .heroAfterHeroMove(heroAfterHeroMove)
+                    .monsterAfterHeroMove(monsterAfterHeroMove)
+                    .heroAfterMonsterMove(heroAfterMonsterMove)
+                    .monsterAfterMonsterMove(monsterAfterMonsterMove)
                     .monsterMoveName(monsterMove.getName())
                     .battleOver(true)
                     .winner(BattleWinner.MONSTER)
@@ -204,8 +217,10 @@ public class BattleService {
 
         return BattleTurnResponse.builder()
                 .battleStateId(saved.getId())
-                .hero(battleMapper.toHeroBattleStateDto(saved.getHero()))
-                .monster(battleMapper.toMonsterBattleStateDto(saved.getMonster()))
+                .heroAfterHeroMove(heroAfterHeroMove)
+                .monsterAfterHeroMove(monsterAfterHeroMove)
+                .heroAfterMonsterMove(heroAfterMonsterMove)
+                .monsterAfterMonsterMove(monsterAfterMonsterMove)
                 .monsterMoveName(monsterMove.getName())
                 .battleOver(false)
                 .winner(null)
@@ -325,19 +340,90 @@ public class BattleService {
         return candidates.get(this.random.nextInt(candidates.size()));
     }
 
-    private double applyDamage(Move move, Double attackerAttack, Double attackerMagic, Double defenderDefense) {
+    private void applyMoveEffects(Move move, BattleFighter attacker, BattleFighter opponent) {
 
-        double value = move.getPrimaryEffect().getValue();
-        StatType stat = move.getPrimaryEffect().getStat();
+        applyEffect(move.getPrimaryEffect(), attacker, opponent);
 
-        if (stat == StatType.ATTACK) {
-            return Math.max(1.0, value * attackerAttack - defenderDefense);
-        } else if (stat == StatType.MAGIC) {
-            return Math.max(1.0, value * attackerMagic);
+        if (move.getSecondaryEffect() != null) {
+            applyEffect(move.getSecondaryEffect(), attacker, opponent);
         }
 
-        return 1.0;
+    }
 
+    private void applyEffect(MoveEffect effect, BattleFighter caster, BattleFighter opponent) {
+
+        BattleFighter actualTarget = effect.getTarget() == EffectTarget.SELF ? caster : opponent;
+
+        switch (effect.getEffectType()) {
+
+            case DAMAGE -> {
+                double damage = switch (effect.getStat()) {
+                    case ATTACK -> Math.max(1.0, effect.getValue() * caster.getAttack() - actualTarget.getDefense());
+                    case MAGIC  -> Math.max(1.0, effect.getValue() * caster.getMagic());
+                    case HP     -> effect.getValue() * caster.getCurrentHp();
+                    default     -> 1.0;
+                };
+                actualTarget.setCurrentHp(actualTarget.getCurrentHp() - damage);
+            }
+
+            case HEAL -> {
+                double heal = effect.getValue() * caster.getMagic();
+                actualTarget.setCurrentHp(Math.min(actualTarget.getMaxHp(), actualTarget.getCurrentHp() + heal));
+            }
+
+            case BUFF -> {
+                applyStatChange(actualTarget, effect.getStat(), effect.getValue());
+                boolean selfApplied = effect.getTarget() == EffectTarget.SELF;
+                actualTarget.getActiveEffects().add(ActiveEffect.builder()
+                        .stat(effect.getStat())
+                        .value(effect.getValue())
+                        .justSelfApplied(selfApplied)
+                        .turnsRemaining(effect.getDuration())
+                        .build());
+            }
+
+            case DEBUFF -> {
+                applyStatChange(actualTarget, effect.getStat(), -effect.getValue());
+                actualTarget.getActiveEffects().add(ActiveEffect.builder()
+                        .stat(effect.getStat())
+                        .value(-effect.getValue())
+                        .turnsRemaining(effect.getDuration())
+                        .build());
+            }
+
+        }
+    }
+
+    private void tickActiveEffects(BattleFighter fighter) {
+
+        Iterator<ActiveEffect> it = fighter.getActiveEffects().iterator();
+
+        while (it.hasNext()) {
+
+            ActiveEffect effect = it.next();
+
+            if(effect.isJustSelfApplied()) {
+                effect.setJustSelfApplied(false);
+                continue;
+            }
+
+            effect.setTurnsRemaining(effect.getTurnsRemaining() - 1);
+
+            if (effect.getTurnsRemaining() == 0) {
+                applyStatChange(fighter, effect.getStat(), -effect.getValue());
+                it.remove();
+            }
+
+        }
+
+    }
+
+    private void applyStatChange(BattleFighter fighter, StatType stat, double delta) {
+        switch (stat) {
+            case ATTACK  -> fighter.setAttack(fighter.getAttack() + delta);
+            case DEFENSE -> fighter.setDefense(fighter.getDefense() + delta);
+            case MAGIC   -> fighter.setMagic(fighter.getMagic() + delta);
+        }
     }
 
 }

@@ -37,8 +37,10 @@ export interface PlayTurnRequest {
 
 export interface BattleTurnResponse {
   battleStateId: number;
-  hero: HeroBattleStateDto;
-  monster: MonsterBattleStateDto;
+  heroAfterHeroMove: HeroBattleStateDto;
+  monsterAfterHeroMove: MonsterBattleStateDto;
+  heroAfterMonsterMove: HeroBattleStateDto | null;
+  monsterAfterMonsterMove: MonsterBattleStateDto | null;
   monsterMoveName: string | null;
   battleOver: boolean;
   winner: 'HERO' | 'MONSTER' | null;
