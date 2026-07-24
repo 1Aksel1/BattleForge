@@ -1,16 +1,20 @@
 package com.battleforge.backend.service;
 
 import com.battleforge.backend.dto.RunConfigurationResponse;
+import com.battleforge.backend.exceptions.ActiveRunConflictException;
 import com.battleforge.backend.exceptions.ResourceNotFoundException;
 import com.battleforge.backend.mapper.RunMapper;
 import com.battleforge.backend.model.Hero;
 import com.battleforge.backend.model.Monster;
 import com.battleforge.backend.model.Move;
 import com.battleforge.backend.model.Run;
+import com.battleforge.backend.model.User;
 import com.battleforge.backend.repository.HeroRepository;
 import com.battleforge.backend.repository.MonsterRepository;
 import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.repository.RunRepository;
+import com.battleforge.backend.shared.OwnershipValidator;
+import com.battleforge.backend.shared.enums.RunStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +30,13 @@ public class RunService {
     private final MonsterRepository monsterRepository;
     private final RunRepository runRepository;
     private final RunMapper runMapper;
+    private final OwnershipValidator ownershipValidator;
 
-    public RunConfigurationResponse createRun() {
+    public RunConfigurationResponse createRun(User user) {
+
+        if (runRepository.existsByHeroUserAndStatus(user, RunStatus.ACTIVE)) {
+            throw new ActiveRunConflictException("User already has an active run.");
+        }
 
         List<Monster> monsters = monsterRepository.findAll();
 
@@ -41,7 +50,7 @@ public class RunService {
                 .orElseThrow(() -> new ResourceNotFoundException("Move not found: Second Wind"));
 
         Hero hero = heroRepository.save(Hero.builder()
-                .username("Knight")
+                .user(user)
                 .level(1)
                 .xp(0)
                 .health(100.0)
@@ -55,6 +64,7 @@ public class RunService {
                 .hero(hero)
                 .monsters(monsters)
                 .currentMonsterIndex(0)
+                .status(RunStatus.ACTIVE)
                 .build());
 
         return RunConfigurationResponse.builder()
@@ -65,10 +75,12 @@ public class RunService {
                 .build();
     }
 
-    public RunConfigurationResponse getRun(Long runId) {
+    public RunConfigurationResponse getRun(Long runId, User user) {
 
         Run run = runRepository.findById(runId)
                 .orElseThrow(() -> new ResourceNotFoundException("Run not found with id: " + runId));
+
+        ownershipValidator.assertRunBelongsToUser(run, user);
 
         return RunConfigurationResponse.builder()
                 .runId(run.getId())

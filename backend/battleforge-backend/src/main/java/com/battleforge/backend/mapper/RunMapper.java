@@ -9,12 +9,14 @@ import com.battleforge.backend.model.Monster;
 import com.battleforge.backend.model.Move;
 import com.battleforge.backend.model.MoveEffect;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RunMapper {
 
     MonsterRunDto toMonsterRunDto(Monster monster);
 
+    @Mapping(source = "user.username", target = "username")
     HeroRunDto toHeroRunDto(Hero hero);
 
     MoveDto toMoveDto(Move move);

@@ -15,11 +15,13 @@ import com.battleforge.backend.model.MonsterBattleState;
 import com.battleforge.backend.model.Move;
 import com.battleforge.backend.model.MoveEffect;
 import com.battleforge.backend.model.Run;
+import com.battleforge.backend.model.User;
 import com.battleforge.backend.repository.BattleStateRepository;
 import com.battleforge.backend.repository.HeroRepository;
 import com.battleforge.backend.repository.MonsterRepository;
 import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.repository.RunRepository;
+import com.battleforge.backend.shared.OwnershipValidator;
 import com.battleforge.backend.shared.enums.BattleStatus;
 import com.battleforge.backend.shared.enums.BattleWinner;
 import com.battleforge.backend.shared.enums.EffectTarget;
@@ -47,6 +49,7 @@ public class BattleService {
     private final HeroRepository heroRepository;
     private final BattleMapper battleMapper;
     private final RunMapper runMapper;
+    private final OwnershipValidator ownershipValidator;
 
     private final Random random = new Random();
 
@@ -56,7 +59,7 @@ public class BattleService {
     private static final double LEVEL_UP_DEFENSE = 2.0;
     private static final double LEVEL_UP_MAGIC = 2.0;
 
-    public BattleStateDto startBattle(StartBattleRequest request) {
+    public BattleStateDto startBattle(StartBattleRequest request, User user) {
 
         if (request.getEquippedMoveIds().size() != 4) {
             throw new InvalidBattleStateException("Exactly 4 moves must be equipped.");
@@ -64,6 +67,8 @@ public class BattleService {
 
         Run run = runRepository.findById(request.getRunId())
                 .orElseThrow(() -> new ResourceNotFoundException("Run not found with id: " + request.getRunId()));
+
+        ownershipValidator.assertRunBelongsToUser(run, user);
 
         Monster monster = monsterRepository.findById(request.getMonsterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Monster not found with id: " + request.getMonsterId()));
@@ -139,10 +144,12 @@ public class BattleService {
 
     }
 
-    public BattleTurnResponse playTurn(PlayTurnRequest request) {
+    public BattleTurnResponse playTurn(PlayTurnRequest request, User user) {
 
         BattleState battleState = battleStateRepository.findById(request.getBattleStateId())
                 .orElseThrow(() -> new ResourceNotFoundException("BattleState not found with id: " + request.getBattleStateId()));
+
+        ownershipValidator.assertRunBelongsToUser(battleState.getRun(), user);
 
         if (battleState.getStatus() != BattleStatus.ACTIVE) {
             throw new InvalidBattleStateException("Battle is not active.");
@@ -228,10 +235,12 @@ public class BattleService {
 
     }
 
-    public BattleResolveResponse resolveBattle(Long battleStateId) {
+    public BattleResolveResponse resolveBattle(Long battleStateId, User user) {
 
         BattleState battleState = battleStateRepository.findById(battleStateId)
                 .orElseThrow(() -> new ResourceNotFoundException("BattleState not found with id: " + battleStateId));
+
+        ownershipValidator.assertRunBelongsToUser(battleState.getRun(), user);
 
         if (battleState.getStatus() == BattleStatus.RESOLVED) {
             throw new InvalidBattleStateException("Battle has already been resolved.");

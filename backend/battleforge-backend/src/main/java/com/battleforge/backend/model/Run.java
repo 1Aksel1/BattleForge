@@ -1,6 +1,9 @@
 package com.battleforge.backend.model;
 
+import com.battleforge.backend.shared.enums.RunStatus;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,4 +48,7 @@ public class Run {
     private List<Monster> monsters = new ArrayList<>();
 
     private Integer currentMonsterIndex;
+
+    @Enumerated(EnumType.STRING)
+    private RunStatus status;
 }
