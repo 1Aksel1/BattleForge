@@ -59,6 +59,22 @@ public class BattleService {
     private static final double LEVEL_UP_DEFENSE = 2.0;
     private static final double LEVEL_UP_MAGIC = 2.0;
 
+    public void abandonBattle(Long battleStateId, User user) {
+
+        BattleState battleState = battleStateRepository.findById(battleStateId)
+                .orElseThrow(() -> new ResourceNotFoundException("BattleState not found with id: " + battleStateId));
+
+        ownershipValidator.assertRunBelongsToUser(battleState.getRun(), user);
+
+        if (battleState.getStatus() != BattleStatus.ACTIVE) {
+            throw new InvalidBattleStateException("Battle is not active.");
+        }
+
+        battleState.setStatus(BattleStatus.COMPLETED);
+        battleState.setWinner(BattleWinner.MONSTER);
+        battleStateRepository.save(battleState);
+    }
+
     public BattleStateDto startBattle(StartBattleRequest request, User user) {
 
         if (request.getEquippedMoveIds().size() != 4) {

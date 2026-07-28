@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +40,13 @@ public class BattleController {
     public ResponseEntity<BattleResolveResponse> resolveBattle(@PathVariable Long battleStateId, HttpServletRequest httpRequest) {
         User user = (User) httpRequest.getAttribute("session");
         return ResponseEntity.ok(battleService.resolveBattle(battleStateId, user));
+    }
+
+    @PutMapping("/battle/{battleStateId}/abandon")
+    public ResponseEntity<Void> abandonBattle(@PathVariable Long battleStateId, HttpServletRequest httpRequest) {
+        User user = (User) httpRequest.getAttribute("session");
+        battleService.abandonBattle(battleStateId, user);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -2,6 +2,7 @@ package com.battleforge.backend.service;
 
 import com.battleforge.backend.dto.RunConfigurationResponse;
 import com.battleforge.backend.exceptions.ActiveRunConflictException;
+import com.battleforge.backend.exceptions.InvalidBattleStateException;
 import com.battleforge.backend.exceptions.ResourceNotFoundException;
 import com.battleforge.backend.mapper.RunMapper;
 import com.battleforge.backend.model.Hero;
@@ -9,11 +10,13 @@ import com.battleforge.backend.model.Monster;
 import com.battleforge.backend.model.Move;
 import com.battleforge.backend.model.Run;
 import com.battleforge.backend.model.User;
+import com.battleforge.backend.repository.BattleStateRepository;
 import com.battleforge.backend.repository.HeroRepository;
 import com.battleforge.backend.repository.MonsterRepository;
 import com.battleforge.backend.repository.MoveRepository;
 import com.battleforge.backend.repository.RunRepository;
 import com.battleforge.backend.shared.OwnershipValidator;
+import com.battleforge.backend.shared.enums.BattleStatus;
 import com.battleforge.backend.shared.enums.RunStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,7 @@ public class RunService {
     private final MoveRepository moveRepository;
     private final MonsterRepository monsterRepository;
     private final RunRepository runRepository;
+    private final BattleStateRepository battleStateRepository;
     private final RunMapper runMapper;
     private final OwnershipValidator ownershipValidator;
 
@@ -82,12 +86,30 @@ public class RunService {
 
         ownershipValidator.assertRunBelongsToUser(run, user);
 
+        if (battleStateRepository.existsByRunAndStatus(run, BattleStatus.ACTIVE)) {
+            throw new InvalidBattleStateException("Cannot view run while a battle is active.");
+        }
+
         return RunConfigurationResponse.builder()
                 .runId(run.getId())
                 .currentMonsterIndex(run.getCurrentMonsterIndex())
                 .hero(runMapper.toHeroRunDto(run.getHero()))
                 .monsters(run.getMonsters().stream().map(runMapper::toMonsterRunDto).toList())
                 .build();
+    }
+
+    public void abandonRun(Long runId, User user) {
+
+        Run run = runRepository.findById(runId)
+                .orElseThrow(() -> new ResourceNotFoundException("Run not found with id: " + runId));
+
+        ownershipValidator.assertRunBelongsToUser(run, user);
+
+        if (run.getStatus() != RunStatus.ACTIVE) {
+            throw new InvalidBattleStateException("Run is not active.");
+        }
+        run.setStatus(RunStatus.ABANDONED);
+        runRepository.save(run);
     }
 
 }
