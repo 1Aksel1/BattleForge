@@ -10,7 +10,7 @@ import { Monster, Move, RunConfigurationResponse } from '../models/run.model';
 })
 export class RunOverviewComponent implements OnInit {
 
-  private runService = inject(RunService);
+  runService = inject(RunService);
   private battleService = inject(BattleService);
   private router = inject(Router);
   run: RunConfigurationResponse | null = null;
@@ -31,6 +31,38 @@ export class RunOverviewComponent implements OnInit {
   toggleEquip(move: Move): void {
     this.runService.toggleEquip(move);
     this.equippedMoves = this.runService.equippedMoves;
+  }
+
+  mainMenu(): void {
+    this.router.navigate(['/main-menu']);
+  }
+
+  abandonRun(): void {
+
+    if (!confirm('Abandon this run? This cannot be undone.')) return;
+
+    this.runService.abandonRun(this.runService.currentRunId!).subscribe({
+      next: () => {
+        this.runService.clearRun();
+        this.router.navigate(['/main-menu']);
+      },
+      error: (err) => alert(err.error?.message ?? err.message),
+    });
+
+  }
+
+  completeRun(): void {
+
+    if (!confirm('Complete this run? You will return to the main menu.')) return;
+
+    this.runService.completeRun(this.runService.currentRunId!).subscribe({
+      next: () => {
+        this.runService.clearRun();
+        this.router.navigate(['/main-menu']);
+      },
+      error: (err) => alert(err.error?.message ?? err.message),
+    });
+
   }
 
   enterBattle(monster: Monster): void {

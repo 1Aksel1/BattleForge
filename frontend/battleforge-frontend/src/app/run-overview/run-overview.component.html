@@ -1,5 +1,13 @@
 <h1>Run Overview</h1>
 
+<button (click)="mainMenu()">Main Menu</button>
+@if (runService.runCompleted) {
+  <p>Congratulations! You defeated all 5 monsters and completed the Run!</p>
+  <button (click)="completeRun()">Complete Run</button>
+} @else {
+  <button (click)="abandonRun()">Abandon Run</button>
+}
+
 @if (run) {
   <p>Run ID: {{ run.runId }}</p>
 

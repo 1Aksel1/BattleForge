@@ -70,8 +70,7 @@ public class BattleService {
             throw new InvalidBattleStateException("Battle is not active.");
         }
 
-        battleState.setStatus(BattleStatus.COMPLETED);
-        battleState.setWinner(BattleWinner.MONSTER);
+        battleState.setStatus(BattleStatus.ABANDONED);
         battleStateRepository.save(battleState);
     }
 

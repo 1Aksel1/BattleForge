@@ -7,12 +7,17 @@ import { BattleResolveResponse, BattleStateDto, BattleTurnResponse, PlayTurnRequ
 export class BattleService {
 
   private http = inject(HttpClient);
+  
   currentBattle: BattleStateDto | null = null;
+  currentBattleStateId: number | null = null;
   lastResolve: BattleResolveResponse | null = null;
 
   startBattle(request: StartBattleRequest): Observable<BattleStateDto> {
     return this.http.post<BattleStateDto>('http://localhost:8080/api/battle/start', request).pipe(
-      tap(battle => { this.currentBattle = battle; })
+      tap(battle => {
+        this.currentBattle = battle;
+        this.currentBattleStateId = battle.battleStateId;
+      })
     );
   }
 
@@ -24,6 +29,15 @@ export class BattleService {
     return this.http.post<BattleResolveResponse>(
       `http://localhost:8080/api/battle/resolve/${battleStateId}`, {}
     ).pipe(tap(resolve => { this.lastResolve = resolve; }));
+  }
+
+  abandonBattle(battleStateId: number): Observable<void> {
+    return this.http.put<void>(`http://localhost:8080/api/battle/${battleStateId}/abandon`, {});
+  }
+
+  clearBattle(): void {
+    this.currentBattle = null;
+    this.currentBattleStateId = null;
   }
 
 }

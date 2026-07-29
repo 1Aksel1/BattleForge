@@ -108,7 +108,35 @@ public class RunService {
         if (run.getStatus() != RunStatus.ACTIVE) {
             throw new InvalidBattleStateException("Run is not active.");
         }
+        battleStateRepository.findByRunAndStatus(run, BattleStatus.ACTIVE).ifPresent(bs -> {
+            bs.setStatus(BattleStatus.ABANDONED);
+            battleStateRepository.save(bs);
+        });
+
         run.setStatus(RunStatus.ABANDONED);
+        runRepository.save(run);
+    }
+
+    public void completeRun(Long runId, User user) {
+
+        Run run = runRepository.findById(runId)
+                .orElseThrow(() -> new ResourceNotFoundException("Run not found with id: " + runId));
+
+        ownershipValidator.assertRunBelongsToUser(run, user);
+
+        if (run.getStatus() != RunStatus.ACTIVE) {
+            throw new InvalidBattleStateException("Run is not active.");
+        }
+
+        if (run.getCurrentMonsterIndex() < 5) {
+            throw new InvalidBattleStateException("Run cannot be completed — not all monsters have been defeated.");
+        }
+
+        if (battleStateRepository.existsByRunAndStatus(run, BattleStatus.ACTIVE)) {
+            throw new InvalidBattleStateException("Cannot complete run while a battle is active.");
+        }
+
+        run.setStatus(RunStatus.COMPLETED);
         runRepository.save(run);
     }
 

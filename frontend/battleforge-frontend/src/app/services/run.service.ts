@@ -10,6 +10,7 @@ export class RunService {
   currentRun: RunConfigurationResponse | null = null;
   currentRunId: number | null = null;
   equippedMoves: Move[] = [];
+  runCompleted: boolean = false;
 
   public startRun(): Observable<RunConfigurationResponse> {
 
@@ -25,8 +26,28 @@ export class RunService {
 
   public getRun(runId: number): Observable<RunConfigurationResponse> {
     return this.http.get<RunConfigurationResponse>(`http://localhost:8080/api/run/${runId}`).pipe(
-      tap(run => { this.currentRun = run; })
+      tap(run => {
+        this.currentRun = run;
+        if (this.equippedMoves.length === 0) {
+          this.equippedMoves = run.hero.learnedMoves.slice(0, 4);
+        }
+      })
     );
+  }
+
+  public abandonRun(runId: number): Observable<void> {
+    return this.http.put<void>(`http://localhost:8080/api/run/${runId}/abandon`, {});
+  }
+
+  public completeRun(runId: number): Observable<void> {
+    return this.http.put<void>(`http://localhost:8080/api/run/${runId}/complete`, {});
+  }
+
+  public clearRun(): void {
+    this.currentRun = null;
+    this.currentRunId = null;
+    this.equippedMoves = [];
+    this.runCompleted = false;
   }
 
   public toggleEquip(move: Move): void {
@@ -38,7 +59,7 @@ export class RunService {
     } else {
       alert('Unequip a move first before equipping a new one');
     }
-    
+
   }
 
 }

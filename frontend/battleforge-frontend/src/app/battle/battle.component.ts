@@ -40,6 +40,26 @@ export class BattleComponent implements OnInit {
 
   }
 
+  mainMenu(): void {
+    this.router.navigate(['/main-menu']);
+  }
+
+  abandonBattle(): void {
+
+    if (!confirm('Abandon this battle? This cannot be undone.')) return;
+
+    const id = this.battle?.battleStateId ?? this.battleService.currentBattleStateId!; 
+
+    this.battleService.abandonBattle(id).subscribe({
+      next: () => {
+        this.battleService.clearBattle();
+        this.router.navigate(['/main-menu']);
+      },
+      error: (err) => alert(err.error?.message ?? err.message),
+    });
+
+  }
+
   private applySnapshot(hero: HeroBattleStateDto, monster: MonsterBattleStateDto): void {
 
     this.heroCurrentHp = hero.currentHp;
@@ -66,17 +86,28 @@ export class BattleComponent implements OnInit {
 
         this.applySnapshot(response.heroAfterHeroMove, response.monsterAfterHeroMove);
 
+        if (this.battleService.currentBattle) {
+          this.battleService.currentBattle = {
+            ...this.battleService.currentBattle,
+            hero: response.heroAfterHeroMove,
+            monster: response.monsterAfterHeroMove,
+          };
+        }
+
         if(response.battleOver && response.winner === 'HERO') {
 
           setTimeout(() => {
 
             this.battleService.resolveBattle(response.battleStateId).subscribe({
-              next: () => this.router.navigate(['/post-battle']),
+              next: () => {
+                this.battleService.clearBattle();
+                this.router.navigate(['/post-battle']);
+              },
               error: (err) => {
                 alert(err.error.message);
                 this.isWaiting = false;
               }
-                });
+            });
 
           }, 1250);
 
@@ -89,9 +120,18 @@ export class BattleComponent implements OnInit {
           this.lastMonsterMove = response.monsterMoveName;
           this.applySnapshot(response.heroAfterMonsterMove!, response.monsterAfterMonsterMove!);
 
+          if (this.battleService.currentBattle) {
+            this.battleService.currentBattle = {
+              ...this.battleService.currentBattle,
+              hero: response.heroAfterMonsterMove!,
+              monster: response.monsterAfterMonsterMove!,
+            };
+          }
+
           if (response.battleOver && response.winner === 'MONSTER') {
 
               alert('You lost!');
+              this.battleService.clearBattle();
               this.router.navigate(['/run']);
               return;
 

@@ -23,16 +23,21 @@ export class EnterUsernameComponent {
   username = '';
 
   onSubmit(): void {
+
     this.sessionService.create(this.username).subscribe({
+
       next: ({ sessionId }) => {
         localStorage.setItem('sessionId', sessionId);
+        localStorage.setItem('username', this.username);
         this.router.navigate(['/main-menu']);
       },
+      
       error: (err) => {
         alert(err?.error?.message ?? err?.message ?? 'Failed to create session');
         this.username = '';
       },
     });
+
   }
 
 }

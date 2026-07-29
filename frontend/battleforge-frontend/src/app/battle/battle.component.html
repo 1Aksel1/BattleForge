@@ -1,5 +1,8 @@
 <h1>Battle</h1>
 
+<button (click)="mainMenu()" [disabled]="isWaiting">Main Menu</button>
+<button (click)="abandonBattle()" [disabled]="isWaiting">Abandon Battle</button>
+
 @if (battle) {
   
   <h2>Hero</h2>

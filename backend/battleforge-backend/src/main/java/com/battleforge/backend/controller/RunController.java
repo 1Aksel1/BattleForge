@@ -39,4 +39,11 @@ public class RunController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/run/{runId}/complete")
+    public ResponseEntity<Void> completeRun(@PathVariable Long runId, HttpServletRequest request) {
+        User user = (User) request.getAttribute("session");
+        runService.completeRun(runId, user);
+        return ResponseEntity.ok().build();
+    }
+
 }

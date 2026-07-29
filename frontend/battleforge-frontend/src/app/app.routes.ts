@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { runGuard } from './guards/run.guard';
+import { battleGuard } from './guards/battle.guard';
+import { postGuard } from './guards/post.guard';
 
 export const routes: Routes = [
   {
@@ -21,17 +24,17 @@ export const routes: Routes = [
   {
     path: 'run',
     loadComponent: () => import('./run-overview/run-overview.component').then(m => m.RunOverviewComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, runGuard],
   },
   {
     path: 'battle',
     loadComponent: () => import('./battle/battle.component').then(m => m.BattleComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, battleGuard],
   },
   {
     path: 'post-battle',
     loadComponent: () => import('./post-battle/post-battle.component').then(m => m.PostBattleComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, postGuard],
   },
   {
     path: '**',

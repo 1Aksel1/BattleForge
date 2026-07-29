@@ -1,3 +1,13 @@
-<h1>Main Menu</h1>
-<button (click)="startRun()">Start Run</button>
-<button>Exit</button>
+<h1>Welcome to BattleForge, {{ username }}</h1>
+
+<button (click)="startRun()">New Run</button>
+
+@if (status?.hasActiveRun && !status?.hasActiveBattle) {
+  <button (click)="continueRun()">Continue Run</button>
+}
+
+@if (status?.hasActiveRun && status?.hasActiveBattle) {
+  <button (click)="continueBattle()">Continue Battle</button>
+}
+
+<button (click)="exit()">Exit</button>
