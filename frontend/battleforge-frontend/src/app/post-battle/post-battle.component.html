@@ -1,17 +1,26 @@
 <h1>Post Battle</h1>
 
 @if (resolve) {
-  <p>XP Gained: {{ resolve.xpGained }}</p>
+  
+  <div class="panel results">
+    <div class="stat-row">
+      <span class="label">XP Gained</span>
+      <span class="value">{{ resolve.xpGained }}</span>
+    </div>
 
-  @if (resolve.leveledUp) {
-    <p>Level Up! New Level: {{ resolve.newLevel }}</p>
-  }
+    @if (resolve.leveledUp) {
+      <p class="level-up">Level Up — {{ resolve.newLevel }}</p>
+    }
 
-  @if (resolve.learnedMove) {
-    <p>Learned Move: {{ resolve.learnedMove.name }} — {{ resolve.learnedMove.description }}</p>
-  }
+    @if (resolve.learnedMove) {
+      <div class="learned-move">
+        <span class="label">New Move Learned</span>
+        <p><strong>{{ resolve.learnedMove.name }}</strong> — {{ resolve.learnedMove.description }}</p>
+      </div>
+    }
+  </div>
 
-  <button (click)="continue()">Continue</button>
+  <button class="btn-primary" (click)="continue()">Continue</button>
 } @else {
   <p>No battle result available.</p>
 }

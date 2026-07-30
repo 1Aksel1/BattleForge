@@ -8,6 +8,7 @@ import { SessionStatusResponse } from '../models/session.model';
 @Component({
   selector: 'app-main-menu',
   templateUrl: './main-menu.component.html',
+  styleUrl: './main-menu.component.scss',
   imports: [],
 })
 export class MainMenuComponent implements OnInit {
@@ -69,6 +70,8 @@ export class MainMenuComponent implements OnInit {
 
   exit(): void {
     localStorage.clear();
+    this.runService.clearRun();
+    this.battleService.clearBattle();
     this.router.navigate(['/enter-username']);
   }
 

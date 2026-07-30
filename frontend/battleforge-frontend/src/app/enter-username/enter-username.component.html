@@ -1,0 +1,14 @@
+<div class="login-card panel">
+  <h1>BattleForge</h1>
+  <p class="subtitle">Enter your name to begin</p>
+
+  <div class="form-group">
+    <input
+      class="text-input"
+      [(ngModel)]="username"
+      placeholder="Your name..."
+      (keydown.enter)="onSubmit()"
+    />
+    <button class="btn-primary" (click)="onSubmit()">Enter</button>
+  </div>
+</div>

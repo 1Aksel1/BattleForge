@@ -7,13 +7,8 @@ import { SessionService } from '../services/session.service';
   selector: 'app-enter-username',
   standalone: true,
   imports: [FormsModule],
-  template: `
-    <div>
-      <h2>Enter Username</h2>
-      <input [(ngModel)]="username" placeholder="Username" />
-      <button (click)="onSubmit()">Enter</button>
-    </div>
-  `,
+  templateUrl: './enter-username.component.html',
+  styleUrl: './enter-username.component.scss',
 })
 export class EnterUsernameComponent {
 

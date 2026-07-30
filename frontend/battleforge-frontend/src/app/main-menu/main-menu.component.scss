@@ -1,0 +1,20 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: var(--space-lg);
+  text-align: center;
+}
+
+.menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 220px;
+
+  button {
+    width: 100%;
+  }
+}

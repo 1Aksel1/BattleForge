@@ -7,6 +7,7 @@ import { BattleResolveResponse } from '../models/battle.model';
 @Component({
   selector: 'app-post-battle',
   templateUrl: './post-battle.component.html',
+  styleUrl: './post-battle.component.scss',
 })
 export class PostBattleComponent implements OnInit {
 

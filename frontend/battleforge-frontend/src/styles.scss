@@ -1,1 +1,149 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+// ─── Design Tokens ───────────────────────────────────────────────────────────
+
+:root {
+  // Backgrounds
+  --color-bg: #fdf6e3;
+  --color-surface: #fef9ed;
+  --color-border: #c8a96e;
+
+  // Accent
+  --color-accent: #e8890c;
+  --color-accent-hover: #c97a0a;
+
+  // Danger
+  --color-danger: #c0392b;
+  --color-danger-hover: #a93226;
+
+  // Text
+  --color-text-primary: #3d2b1f;
+  --color-text-muted: #7a5c42;
+
+  // HP bar
+  --color-hp-fill: #27ae60;
+  --color-hp-low: #e74c3c;
+  --color-hp-track: #d5c4a1;
+
+  // Fonts
+  --font-heading: 'Silkscreen', monospace;
+  --font-body: 'Inter', sans-serif;
+
+  // Font scale
+  --font-size-sm: 0.8rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+
+  // Spacing
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+
+  // Shape
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-panel: 0 2px 8px rgba(61, 43, 31, 0.15);
+}
+
+// ─── Reset ───────────────────────────────────────────────────────────────────
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+// ─── Base Elements ───────────────────────────────────────────────────────────
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}
+
+h1 { font-size: var(--font-size-xxl); }
+h2 { font-size: var(--font-size-xl); }
+h3 { font-size: var(--font-size-lg); }
+
+p, li {
+  font-family: var(--font-body);
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-base);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+
+// ─── Utility Classes ─────────────────────────────────────────────────────────
+
+.panel {
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-panel);
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+  }
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-danger-hover);
+  }
+}
+
+.hp-bar-track {
+  width: 100%;
+  height: 12px;
+  background-color: var(--color-hp-track);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  background-color: var(--color-hp-fill);
+  border-radius: var(--radius-sm);
+  transition: width 0.4s ease;
+}
