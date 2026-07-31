@@ -1,54 +1,120 @@
-<h1>Run Overview</h1>
+<header class="run-header">
+  <h1>Run Overview</h1>
+  <div class="header-actions">
+    <button class="btn-primary" (click)="mainMenu()">Main Menu</button>
+    @if (runService.runCompleted) {
+      <button class="btn-primary" (click)="completeRun()">Complete Run</button>
+    } @else {
+      <button class="btn-danger" (click)="abandonRun()">Abandon Run</button>
+    }
+  </div>
+</header>
 
-<button (click)="mainMenu()">Main Menu</button>
 @if (runService.runCompleted) {
-  <p>Congratulations! You defeated all 5 monsters and completed the Run!</p>
-  <button (click)="completeRun()">Complete Run</button>
-} @else {
-  <button (click)="abandonRun()">Abandon Run</button>
+  <div class="run-complete-banner">
+    Congratulations! You defeated all 5 monsters and completed the Run!
+  </div>
 }
 
 @if (run) {
-  <p>Run ID: {{ run.runId }}</p>
+  <div class="run-columns">
 
-  <h2>Hero: {{ run.hero.username }}</h2>
-  <p>Level: {{ run.hero.level }} | XP: {{ run.hero.xp }}/{{ xpThreshold() }}</p>
-  <p>HP: {{ run.hero.health }} | ATK: {{ run.hero.attack }} | DEF: {{ run.hero.defense }} | MAG: {{ run.hero.magic }}</p>
+    <div class="col-left">
 
-  <h3>Equipped Moves</h3>
-  <ul>
-    @for (move of equippedMoves; track move.id) {
-      <li><strong>{{ move.name }}</strong> — {{ move.description }}</li>
-    }
-  </ul>
+      <div class="panel hero-panel">
+        <h2>{{ run.hero.username }}</h2>
+        <div class="hero-level">Level {{ run.hero.level }}</div>
 
-  <h3>Learned Moves</h3>
-  <ul>
-    @for (move of run.hero.learnedMoves; track move.id) {
-      <li>
-        <strong>{{ move.name }}</strong> — {{ move.description }}
-        @if (equippedMoves.some(e => e.id === move.id)) {
-          [equipped]
-        }
-        <button (click)="toggleEquip(move)">
-          @if (equippedMoves.some(e => e.id === move.id)) { Unequip } @else { Equip }
-        </button>
-      </li>
-    }
-  </ul>
+        <div class="stats-row">
+          <div class="stat">
+            <span class="label">HP</span>
+            <span class="value">{{ run.hero.health }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">ATK</span>
+            <span class="value">{{ run.hero.attack }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">DEF</span>
+            <span class="value">{{ run.hero.defense }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">MAG</span>
+            <span class="value">{{ run.hero.magic }}</span>
+          </div>
+        </div>
 
-  <h3>Monsters ({{ run.monsters.length }})</h3>
-  <ol>
-    @for (monster of run.monsters; track monster.id; let i = $index) {
-      <li>
-        @if (i <= run.currentMonsterIndex) {
-          <span (click)="enterBattle(monster)" style="cursor:pointer">{{ monster.name }}</span>
-        } @else {
-          {{ monster.name }} (locked)
-        }
-      </li>
-    }
-  </ol>
+        <div class="xp-section">
+          <div class="xp-label">
+            <span class="label">XP</span>
+            <span class="value">{{ run.hero.xp }} / {{ xpThreshold() }}</span>
+          </div>
+          <div class="hp-bar-track">
+            <div class="hp-bar-fill xp-fill" [style.width.%]="xpPercent()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel moves-panel">
+        <h3>Moves</h3>
+        <div class="moves-list">
+          @for (move of run.hero.learnedMoves; track move.id) {
+            <div class="move-card">
+              <div class="move-info">
+                <div class="move-header">
+                  <strong class="move-name">{{ move.name }}</strong>
+                  @if (isEquipped(move)) {
+                    <span class="badge badge-equipped">Equipped</span>
+                  } @else {
+                    <span class="badge badge-unequipped">Unequipped</span>
+                  }
+                </div>
+                <p class="move-desc">{{ move.description }}</p>
+              </div>
+              <button
+                [class.btn-primary]="!isEquipped(move)"
+                [class.btn-danger]="isEquipped(move)"
+                (click)="toggleEquip(move)">
+                {{ isEquipped(move) ? 'Unequip' : 'Equip' }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-right">
+      <div class="panel monster-panel">
+        <h3>Monsters</h3>
+        <ol class="monster-track">
+          @for (monster of run.monsters; track monster.id; let i = $index) {
+            <li class="monster-step"
+                [class.step-defeated]="monsterState(i) === 'defeated'"
+                [class.step-current]="monsterState(i) === 'current'"
+                [class.step-locked]="monsterState(i) === 'locked'">
+              <div class="step-indicator">
+                @if (monsterState(i) === 'defeated') { ✓ }
+                @else if (monsterState(i) === 'current') { ⚔ }
+                @else { ○ }
+              </div>
+              <div class="step-content">
+                @if (monsterState(i) === 'current') {
+                  <span class="monster-name clickable" (click)="enterBattle(monster)">{{ monster.name }}</span>
+                } @else {
+                  <span class="monster-name">{{ monster.name }}</span>
+                }
+              </div>
+              @if (monsterState(i) === 'defeated') {
+                <button class="replay-btn" (click)="enterBattle(monster)" title="Replay battle">↺</button>
+              }
+            </li>
+          }
+        </ol>
+      </div>
+    </div>
+
+  </div>
 } @else {
-  <p>No run data available.</p>
+  <p class="no-data">No run data available.</p>
 }

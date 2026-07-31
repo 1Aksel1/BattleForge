@@ -7,6 +7,7 @@ import { Monster, Move, RunConfigurationResponse } from '../models/run.model';
 @Component({
   selector: 'app-run-overview',
   templateUrl: './run-overview.component.html',
+  styleUrl: './run-overview.component.scss',
 })
 export class RunOverviewComponent implements OnInit {
 
@@ -15,6 +16,7 @@ export class RunOverviewComponent implements OnInit {
   private router = inject(Router);
   run: RunConfigurationResponse | null = null;
   equippedMoves: Move[] = [];
+  private readonly xpThresholds: Record<number, number> = { 1: 100, 2: 200, 3: 350, 4: 500 };
 
   ngOnInit(): void {
 
@@ -87,19 +89,38 @@ export class RunOverviewComponent implements OnInit {
 
   }
 
+  isEquipped(move: Move): boolean {
+    return this.equippedMoves.some(e => e.id === move.id);
+  }
+
+  monsterState(index: number): 'defeated' | 'current' | 'locked' {
+
+    if (this.runService.runCompleted) return 'defeated';
+    if (index < this.run!.currentMonsterIndex) return 'defeated';
+    if (index === this.run!.currentMonsterIndex) return 'current';
+
+    return 'locked';
+    
+  }
+
   xpThreshold(): string {
+    const level = this.run?.hero.level ?? 0;
 
-    switch(this.run?.hero.level) {
+    if (level >= 5) return 'MAX';
+    return this.xpThresholds[level]?.toString() ?? '';
 
-      case 1: return "100";
-      case 2: return "200";
-      case 3: return "350";
-      case 4: return "500";
-      case 5: return "MAX";
-      default:  return "";
-      
-    }
+  }
 
+  xpPercent(): number {
+    const level = this.run?.hero.level ?? 0;
+
+    if (level >= 5) return 100;
+
+    const threshold = this.xpThresholds[level];
+
+    if (!threshold) return 0;
+    
+    return Math.min((this.run!.hero.xp / threshold) * 100, 100);
   }
 
 }
