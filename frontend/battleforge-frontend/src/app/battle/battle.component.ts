@@ -7,6 +7,7 @@ import { DecimalPipe } from '@angular/common';
 @Component({
   selector: 'app-battle',
   templateUrl: './battle.component.html',
+  styleUrl: './battle.component.scss',
   imports: [DecimalPipe]
 })
 export class BattleComponent implements OnInit {
@@ -16,7 +17,8 @@ export class BattleComponent implements OnInit {
 
   battle: BattleStateDto | null = null;
   isWaiting: boolean = false;
-  lastMonsterMove: string | null = null;
+  heroMessage: string | null = null;
+  monsterMessage: string | null = null;
 
   heroCurrentHp: number = 0;
   heroMaxHp: number = 0;
@@ -48,7 +50,7 @@ export class BattleComponent implements OnInit {
 
     if (!confirm('Abandon this battle? This cannot be undone.')) return;
 
-    const id = this.battle?.battleStateId ?? this.battleService.currentBattleStateId!; 
+    const id = this.battle?.battleStateId ?? this.battleService.currentBattleStateId!;
 
     this.battleService.abandonBattle(id).subscribe({
       next: () => {
@@ -76,6 +78,21 @@ export class BattleComponent implements OnInit {
 
   }
 
+  monsterImagePath(): string {
+    const name = this.battle?.monster.name ?? '';
+    return `characters/${name.toLowerCase().replace(/\s+/g, '-')}.png`;
+  }
+
+  hpPercent(current: number, max: number): number {
+    if (max === 0) return 0;
+    return Math.max(0, Math.min((current / max) * 100, 100));
+  }
+
+  isLowHp(current: number, max: number): boolean {
+    if (max === 0) return false;
+    return current / max < 0.25;
+  }
+
   playTurn(moveId: number): void {
 
     this.isWaiting = true;
@@ -83,6 +100,9 @@ export class BattleComponent implements OnInit {
     this.battleService.playTurn({ battleStateId: this.battle!.battleStateId, moveId }).subscribe({
 
       next: (response) => {
+
+        const monsterHpBefore = this.monsterCurrentHp;
+        const heroMoveName = this.battle!.hero.equippedMoves.find(m => m.id === moveId)?.name ?? 'Unknown';
 
         this.applySnapshot(response.heroAfterHeroMove, response.monsterAfterHeroMove);
 
@@ -94,7 +114,11 @@ export class BattleComponent implements OnInit {
           };
         }
 
-        if(response.battleOver && response.winner === 'HERO') {
+        const heroDamage = Math.max(0, Math.round(monsterHpBefore - response.monsterAfterHeroMove.currentHp));
+        this.heroMessage = `You used ${heroMoveName}!${heroDamage > 0 ? ` (−${heroDamage} HP)` : ''}`;
+        this.monsterMessage = null;
+
+        if (response.battleOver && response.winner === 'HERO') {
 
           setTimeout(() => {
 
@@ -117,7 +141,9 @@ export class BattleComponent implements OnInit {
 
         setTimeout(() => {
 
-          this.lastMonsterMove = response.monsterMoveName;
+          const monsterDamage = Math.max(0, Math.round(response.heroAfterHeroMove.currentHp - response.heroAfterMonsterMove!.currentHp));
+          this.monsterMessage = `${this.battle!.monster.name} used ${response.monsterMoveName}!${monsterDamage > 0 ? ` (−${monsterDamage} HP)` : ''}`;
+
           this.applySnapshot(response.heroAfterMonsterMove!, response.monsterAfterMonsterMove!);
 
           if (this.battleService.currentBattle) {
@@ -129,25 +155,25 @@ export class BattleComponent implements OnInit {
           }
 
           if (response.battleOver && response.winner === 'MONSTER') {
-
-              alert('You lost!');
-              this.battleService.clearBattle();
-              this.router.navigate(['/run']);
-              return;
-
+            alert('You lost!');
+            this.battleService.clearBattle();
+            this.router.navigate(['/run']);
+            return;
           }
 
           this.isWaiting = false;
+
         }, 1500);
 
       },
 
-    error: (err) => {
-      alert(err.error.message);
-      this.isWaiting = false;
-    }
+      error: (err) => {
+        alert(err.error.message);
+        this.isWaiting = false;
+      }
 
     });
+
   }
 
 }

@@ -1,26 +1,95 @@
-<h1>Battle</h1>
-
-<button (click)="mainMenu()" [disabled]="isWaiting">Main Menu</button>
-<button (click)="abandonBattle()" [disabled]="isWaiting">Abandon Battle</button>
+<header class="battle-header">
+  <h1>Battle</h1>
+  <div class="header-actions">
+    <button class="btn-primary" (click)="mainMenu()" [disabled]="isWaiting">Main Menu</button>
+    <button class="btn-danger" (click)="abandonBattle()" [disabled]="isWaiting">Abandon Battle</button>
+  </div>
+</header>
 
 @if (battle) {
-  
-  <h2>Hero</h2>
-  <p>HP: {{ heroCurrentHp | number:'1.0-2' }}/{{ heroMaxHp | number:'1.0-2'  }} | ATK: {{ heroAttack }} | DEF: {{ heroDefense }} | MAG: {{ heroMagic }}</p>
 
-  <h3>Equipped Moves</h3>
-  @for (move of battle.hero.equippedMoves; track move.id) {
-    <button (click)="playTurn(move.id)" [disabled]="isWaiting">
-      {{ move.name }} — {{ move.description }}
-    </button>
-  }
+  <div class="battle-arena">
 
-  @if (lastMonsterMove) {
-    <p>Monster played: {{ lastMonsterMove }}</p>
-  }
+    <div class="combatant hero-side panel">
+      <img class="character-image" src="characters/knight.png" alt="Hero" />
+      <div class="combatant-info">
+        <h2>Hero</h2>
+        <div class="hp-bar-track">
+          <div class="hp-bar-fill"
+               [class.hp-low]="isLowHp(heroCurrentHp, heroMaxHp)"
+               [style.width.%]="hpPercent(heroCurrentHp, heroMaxHp)">
+          </div>
+        </div>
+        <p class="hp-text" [class.hp-low-text]="isLowHp(heroCurrentHp, heroMaxHp)">
+          {{ heroCurrentHp | number:'1.0-0' }} / {{ heroMaxHp | number:'1.0-0' }} HP
+        </p>
+        <div class="stats-row">
+          <div class="stat">
+            <span class="label">ATK</span>
+            <span class="value">{{ heroAttack }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">DEF</span>
+            <span class="value">{{ heroDefense }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">MAG</span>
+            <span class="value">{{ heroMagic }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <h2>vs {{ battle.monster.name }}</h2>
-  <p>HP: {{ monsterCurrentHp | number:'1.0-2' }}/{{ monsterMaxHp | number:'1.0-2' }} | ATK: {{ monsterAttack }} | DEF: {{ monsterDefense }} | MAG: {{ monsterMagic }}</p>
+    <div class="combat-log">
+      @if (heroMessage) {
+        <p class="log-entry hero-log">{{ heroMessage }}</p>
+      }
+      @if (monsterMessage) {
+        <p class="log-entry monster-log">{{ monsterMessage }}</p>
+      }
+    </div>
+
+    <div class="combatant monster-side panel">
+      <img class="character-image" [src]="monsterImagePath()" [alt]="battle.monster.name" />
+      <div class="combatant-info">
+        <h2>{{ battle.monster.name }}</h2>
+        <div class="hp-bar-track">
+          <div class="hp-bar-fill"
+               [class.hp-low]="isLowHp(monsterCurrentHp, monsterMaxHp)"
+               [style.width.%]="hpPercent(monsterCurrentHp, monsterMaxHp)">
+          </div>
+        </div>
+        <p class="hp-text" [class.hp-low-text]="isLowHp(monsterCurrentHp, monsterMaxHp)">
+          {{ monsterCurrentHp | number:'1.0-0' }} / {{ monsterMaxHp | number:'1.0-0' }} HP
+        </p>
+        <div class="stats-row">
+          <div class="stat">
+            <span class="label">ATK</span>
+            <span class="value">{{ monsterAttack }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">DEF</span>
+            <span class="value">{{ monsterDefense }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">MAG</span>
+            <span class="value">{{ monsterMagic }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="move-bar">
+    @for (move of battle.hero.equippedMoves; track move.id) {
+      <button class="btn-primary move-btn" (click)="playTurn(move.id)" [disabled]="isWaiting">
+        <span class="move-name">{{ move.name }}</span>
+        <span class="move-desc">{{ move.description }}</span>
+      </button>
+    }
+  </div>
+
 } @else {
-  <p>No battle data.</p>
+  <p class="no-data">No battle data.</p>
 }
