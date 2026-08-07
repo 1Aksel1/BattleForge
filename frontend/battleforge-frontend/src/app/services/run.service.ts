@@ -14,7 +14,7 @@ export class RunService {
 
   public startRun(): Observable<RunConfigurationResponse> {
 
-    return this.http.post<RunConfigurationResponse>('http://localhost:8080/api/run', {}).pipe(
+    return this.http.post<RunConfigurationResponse>('/api/run', {}).pipe(
       tap(run => {
         this.currentRun = run;
         this.currentRunId = run.runId;
@@ -25,7 +25,7 @@ export class RunService {
   }
 
   public getRun(runId: number): Observable<RunConfigurationResponse> {
-    return this.http.get<RunConfigurationResponse>(`http://localhost:8080/api/run/${runId}`).pipe(
+    return this.http.get<RunConfigurationResponse>(`/api/run/${runId}`).pipe(
       tap(run => {
         this.currentRun = run;
         if (this.equippedMoves.length === 0) {
@@ -36,11 +36,11 @@ export class RunService {
   }
 
   public abandonRun(runId: number): Observable<void> {
-    return this.http.put<void>(`http://localhost:8080/api/run/${runId}/abandon`, {});
+    return this.http.put<void>(`/api/run/${runId}/abandon`, {});
   }
 
   public completeRun(runId: number): Observable<void> {
-    return this.http.put<void>(`http://localhost:8080/api/run/${runId}/complete`, {});
+    return this.http.put<void>(`/api/run/${runId}/complete`, {});
   }
 
   public clearRun(): void {
