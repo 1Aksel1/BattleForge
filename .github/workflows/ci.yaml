@@ -1,0 +1,41 @@
+name: CI
+
+on:
+ push:
+  branches: [main]
+
+permissions:
+ contents: read
+ packages: write
+
+jobs:
+ build-and-push:
+  runs-on: ubuntu-latest
+  steps:
+
+   - name: Checkout code
+     uses: actions/checkout@v4
+   
+   - name: Log in to GHCR
+     uses: docker/login-action@v3
+     with:
+       registry: ghcr.io
+       username: ${{ github.actor }}
+       password: ${{ secrets.GITHUB_TOKEN }}
+
+   - name: Build and push backend
+     uses: docker/build-push-action@v5
+     with:
+       context: ./backend/battleforge-backend
+       push: true
+       tags: ghcr.io/1aksel1/battleforge-backend:latest
+
+   - name: Build and push frontend
+     uses: docker/build-push-action@v5
+     with:
+       context: ./frontend/battleforge-frontend
+       push: true
+       tags: ghcr.io/1aksel1/battleforge-frontend:latest  
+    
+
+
