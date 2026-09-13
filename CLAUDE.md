@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Project Overview
 
-BattleForge - Turn-based RPG full stack application.
-Evolution plan: full stack → Docker → Kubernetes → observability → simulation
+BattleForge - Turn-based RPG full stack game platform.
+Evolution plan: full stack → Docker → Kubernetes → observability → analytics -> simulation
 
 # Tech Stack
 
