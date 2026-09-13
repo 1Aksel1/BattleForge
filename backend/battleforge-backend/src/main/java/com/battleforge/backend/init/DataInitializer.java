@@ -26,6 +26,11 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
 
+        if(moveRepository.count() > 0) {
+            return;
+        }
+
+
         // ── Move value
 
         // Light damage:   0.5–1.0 × stat   (Drain Life, Mana Drain, Web Throw, Dirty Kick)
