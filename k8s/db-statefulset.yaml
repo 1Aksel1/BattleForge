@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+ name: battleforge-db
+spec:
+ serviceName: battleforge-db-headless
+ replicas: 1
+ selector:
+  matchLabels:
+   app: battleforge-db
+ template:
+  metadata:
+   labels:
+    app: battleforge-db
+  spec:
+   containers:
+    - name: postgres
+      image: postgres:16-alpine
+      env:
+       - name: POSTGRES_DB
+         valueFrom:
+          configMapKeyRef:
+           name: backend-configmap
+           key: DB_NAME
+       - name: POSTGRES_USER
+         valueFrom:
+          secretKeyRef:
+           name: db-secret
+           key: DB_USER 
+       - name: POSTGRES_PASSWORD
+         valueFrom:
+          secretKeyRef:
+           name: db-secret
+           key: DB_PASSWORD
+       - name: PGDATA
+         value: /var/lib/postgresql/data/pgdata
+      ports:
+       - containerPort: 5432  
+      volumeMounts:
+       - name: postgres-storage
+         mountPath: /var/lib/postgresql/data
+      resources:
+       requests:
+        cpu: "100m"
+        memory: "256Mi"
+       limits:
+        cpu: "250m"
+        memory: "512Mi"
+ volumeClaimTemplates:
+  - metadata:
+     name: postgres-storage
+    spec:
+     accessModes: ["ReadWriteOnce"]
+     resources:
+      requests:
+       storage: 1Gi   
+
+---
+
+apiVersion: v1 
+kind: Service 
+metadata:
+ name: battleforge-db-headless
+spec:
+ selector:
+  app: battleforge-db
+ clusterIP: None
+ ports: 
+  - port: 5432
+    targetPort: 5432
+    
