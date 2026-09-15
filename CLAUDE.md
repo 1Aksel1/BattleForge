@@ -5,14 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Project Overview
 
 BattleForge - Turn-based RPG full stack game platform.
-Evolution plan: full stack → Docker → Kubernetes → observability → analytics -> simulation
+Evolution plan: full stack → Docker → Kubernetes → Cloud → CI/CD → observability → analytics → simulation
 
 # Tech Stack
 
 - Frontend: Angular 21.2.13, TypeScript, RxJS, Vitest
 - Backend: Java 21, Spring Boot 4.0.6, Spring Data JPA, Lombok
 - DB: PostgreSQL (localhost:5432/battleforge, user: postgres, pass: 123123123)
-- Infra: Docker, Kubernetes, GCP (not yet implemented)
+- Infra: Docker, Kubernetes, GKE deployed, CI/CD via GitHub Actions
 
 # Commands
 
@@ -34,10 +34,10 @@ npm run build                 # Production build
 # Architecture
 
 ### Backend Layer Order
-
 ```
 controller → service → repository → entity ← dto
 ```
+
 
 - **entity**: JPA-mapped DB table (`@Entity`)
 - **dto**: Data transfer object for request/response — never expose entities directly over HTTP
@@ -52,7 +52,7 @@ Angular standalone components (no `NgModules`). State is managed via RxJS observ
 
 # Database
 
-`spring.jpa.hibernate.ddl-auto=create-drop` — schema is **dropped and recreated** on every backend restart. This is intentional for early development. Change to `validate` or `update` before adding Docker/prod config.
+Local dev: `spring.jpa.hibernate.ddl-auto=create-drop` — schema is **dropped and recreated** on every backend restart. Docker/Kubernetes: `update` mode with an idempotency guard in `DataInitializer` (checks `moveRepository.count() > 0` before seeding) to preserve data across pod restarts.
 
 # Claude Workflow
 
