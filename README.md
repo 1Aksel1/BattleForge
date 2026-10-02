@@ -13,7 +13,7 @@ A turn-based RPG built as a complete production software lifecycle exercise. The
 | Orchestration | Kubernetes (Minikube) | ✅ |
 | Cloud | Google Kubernetes Engine | ✅ |
 | CI/CD | GitHub Actions, GHCR | ✅ |
-| Infrastructure as Code | Terraform | in progress |
+| Infrastructure as Code | Terraform | ✅ |
 | Observability | Prometheus, Grafana, Micrometer | planned |
 | Game Analytics | win rates, difficulty curves, XP progression | planned |
 | Load Simulation | traffic generation, autoscaling | planned |

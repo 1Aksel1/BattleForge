@@ -23,3 +23,10 @@ postman
 
 .env
 
+# Terraform
+
+tf/.terraform/
+tf/*.tfstate
+tf/*.tfstate.backup
+tf/*.tfvars
+
